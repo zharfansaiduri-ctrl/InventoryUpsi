@@ -6,307 +6,139 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background:#f2f2f2;
-  padding:20px;
-}
-.box {
-  max-width:500px;
-  margin:auto;
-  background:white;
-  padding:20px;
-  border-radius:10px;
-}
-input, select, button {
-  width:100%;
-  padding:10px;
-  margin:8px 0;
-}
-button {
-  background:#0d6efd;
-  color:white;
-  border:none;
-}
-button:hover { background:#084298; }
-
-.hidden { display:none; }
-
-#staffList {
-  list-style:none;
-  padding:0;
-  margin:0;
-  border:1px solid #ccc;
-  max-height:150px;
-  overflow-y:auto;
-}
-#staffList li {
-  padding:8px;
-  cursor:pointer;
-}
-#staffList li:hover {
-  background:#eee;
-}
+body{font-family:Arial;background:#f2f2f2;padding:20px}
+.box{max-width:450px;margin:auto;background:#fff;padding:20px;border-radius:8px}
+input,select,button{width:100%;padding:8px;margin:6px 0}
+button{background:#0d6efd;color:#fff;border:none}
+#list{border:1px solid #ccc;list-style:none;padding:0;margin:0}
+#list li{padding:6px;cursor:pointer}
+#list li:hover{background:#eee}
+.hide{display:none}
 </style>
 </head>
 
 <body>
-
 <div class="box">
-  <h2 id="tajuk">Permohonan Aset</h2>
+<h3>Permohonan Aset</h3>
 
-  <form id="form">
+<form id="f">
+  <input id="nama" placeholder="Nama Staff" autocomplete="off" required>
+  <ul id="list"></ul>
 
-    <!-- STAFF AUTOCOMPLETE -->
-    <input id="nama" placeholder="Nama Staff" autocomplete="off" required>
-    <ul id="staffList"></ul>
+  <input id="jabatan" placeholder="Jabatan" readonly required>
 
-    <input id="jabatan" placeholder="Jabatan" readonly required>
+  <select id="jenis" required>
+    <option value="">Pilih Aset</option>
+    <option value="alat_tulis">Alat Tulis</option>
+    <option value="kenderaan">Kenderaan</option>
+    <option value="projektor">Projektor</option>
+    <option value="kertas_a4">Kertas A4</option>
+  </select>
 
-    <!-- PILIH ASET -->
-    <select id="jenis" required>
-      <option value="">-- Pilih Aset --</option>
-      <option value="alat_tulis">Alat Tulis</option>
-      <option value="kenderaan">Kenderaan</option>
-      <option value="projektor">Projektor</option>
-      <option value="kertas_a4">Kertas A4</option>
-    </select>
+  <input id="item" class="hide">
+  <input id="tempoh" class="hide" placeholder="Tempoh">
+  <input id="kuantiti" class="hide" type="number" placeholder="Kuantiti">
 
-    <!-- FIELD DINAMIK -->
-    <input id="item" class="hidden" placeholder="">
-    <input id="tempoh" class="hidden" placeholder="Tempoh">
-    <input id="kuantiti" class="hidden" type="number" placeholder="Kuantiti">
+  <button>Hantar</button>
+</form>
 
-    <button type="submit">Hantar</button>
-  </form>
-
-  <p id="msg"></p>
+<p id="m"></p>
 </div>
 
 <script>
-/* ================== API ================== */
-const STAFF_API = "<!DOCTYPE html>
-<html lang="ms">
-<head>
-<meta charset="UTF-8">
-<title>Permohonan Aset</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background:#f2f2f2;
-  padding:20px;
-}
-.box {
-  max-width:500px;
-  margin:auto;
-  background:white;
-  padding:20px;
-  border-radius:10px;
-}
-input, select, button {
-  width:100%;
-  padding:10px;
-  margin:8px 0;
-}
-button {
-  background:#0d6efd;
-  color:white;
-  border:none;
-}
-button:hover { background:#084298; }
-
-.hidden { display:none; }
-
-#staffList {
-  list-style:none;
-  padding:0;
-  margin:0;
-  border:1px solid #ccc;
-  max-height:150px;
-  overflow-y:auto;
-}
-#staffList li {
-  padding:8px;
-  cursor:pointer;
-}
-#staffList li:hover {
-  background:#eee;
-}
-</style>
-</head>
-
-<body>
-
-<div class="box">
-  <h2 id="tajuk">Permohonan Aset</h2>
-
-  <form id="form">
-
-    <!-- STAFF AUTOCOMPLETE -->
-    <input id="nama" placeholder="Nama Staff" autocomplete="off" required>
-    <ul id="staffList"></ul>
-
-    <input id="jabatan" placeholder="Jabatan" readonly required>
-
-    <!-- PILIH ASET -->
-    <select id="jenis" required>
-      <option value="">-- Pilih Aset --</option>
-      <option value="alat_tulis">Alat Tulis</option>
-      <option value="kenderaan">Kenderaan</option>
-      <option value="projektor">Projektor</option>
-      <option value="kertas_a4">Kertas A4</option>
-    </select>
-
-    <!-- FIELD DINAMIK -->
-    <input id="item" class="hidden" placeholder="">
-    <input id="tempoh" class="hidden" placeholder="Tempoh">
-    <input id="kuantiti" class="hidden" type="number" placeholder="Kuantiti">
-
-    <button type="submit">Hantar</button>
-  </form>
-
-  <p id="msg"></p>
-</div>
-
-<script>
-/* ================== API ================== */
-const STAFF_API = "https://script.google.com/macros/s/AKfycbxdgF9XIHQ_enzCHLK_8nyrqFBh3bKCnqlQ_vN5B1lEYR48DDCTVksm536ioKNs8li9/exec";
-
-const RESPONSE_API = {
-   alat_tulis: "https://script.google.com/macros/s/AKfycbwdXh0iQ0ENMfqUEhXGcgaU41JCIBQ9IU0V3g9DjDshfkwYMDl3T2t0P0oNpNzkddBAfw/exec",
-  kenderaan: "https://script.google.com/macros/s/AKfycbwbhIgyxWobB9WRBLs_pQPcBUKAKcZResAe3mBQBVdLjtI0Ya-K6_z3zunjmMBWqov7jQ/exec",
-  projektor: "https://script.google.com/macros/s/AKfycbxWjh1hHWkwNXF1SzuRCiTPodlA91LYN1L4lo1FDjhsWG7ykKtp-u4HVM5CbMfUoUN5Hw/exec",
-  kertas_a4: "https://script.google.com/macros/s/AKfycbyb4htvO1FBTusXEQmbs-cxcoteFADld9aKb8gWCYuE0S-qJ0KsKm9MxR52yIxBto4a/exec"
+/* ===== API ===== */
+const STAFF_API="https://script.google.com/macros/s/XXXX/exec";
+const API={
+ alat_tulis:"https://script.google.com/macros/s/XXXX/exec",
+ kenderaan:"https://script.google.com/macros/s/XXXX/exec",
+ projektor:"https://script.google.com/macros/s/XXXX/exec",
+ kertas_a4:"https://script.google.com/macros/s/XXXX/exec"
 };
 
-/* ================== ELEMENT ================== */
-const nama = document.getElementById("nama");
-const jabatan = document.getElementById("jabatan");
-const staffList = document.getElementById("staffList");
+/* ===== ELEMEN ===== */
+const nama=nama;
+const jabatan=jabatan;
+const list=document.getElementById("list");
+const jenis=jenis;
+const item=item;
+const tempoh=tempoh;
+const kuantiti=kuantiti;
+const f=f;
+const m=m;
 
-const jenis = document.getElementById("jenis");
-const item = document.getElementById("item");
-const tempoh = document.getElementById("tempoh");
-const kuantiti = document.getElementById("kuantiti");
+/* ===== AUTOCOMPLETE ===== */
+nama.oninput=async()=>{
+ list.innerHTML=""; jabatan.value="";
+ if(nama.value.length<2)return;
 
-const form = document.getElementById("form");
-const msg = document.getElementById("msg");
+ const r=await fetch(`${STAFF_API}?search=${nama.value}`);
+ const d=await r.json();
 
-/* ================== AUTOCOMPLETE STAFF ================== */
-nama.addEventListener("input", async () => {
-  const q = nama.value.trim();
-  staffList.innerHTML = "";
-  jabatan.value = "";
-
-  if (q.length < 2) return;
-
-  const res = await fetch(`${STAFF_API}?search=${encodeURIComponent(q)}`);
-  const data = await res.json();
-
-  data.forEach(staff => {
-    const li = document.createElement("li");
-    li.textContent = staff.Nama;
-
-    li.onclick = () => {
-      nama.value = staff.Nama;
-      jabatan.value = staff.Dept;
-      staffList.innerHTML = "";
-    };
-
-    staffList.appendChild(li);
-  });
-});
-
-/* ================== FIELD CONTROL ================== */
-function updateField(type) {
-  item.classList.add("hidden");
-  tempoh.classList.add("hidden");
-  kuantiti.classList.add("hidden");
-
-  item.value = "";
-  tempoh.value = "";
-  kuantiti.value = "";
-
-  if (type === "alat_tulis") {
-    item.placeholder = "Jenis Alat";
-    item.classList.remove("hidden");
-    kuantiti.classList.remove("hidden");
-  }
-
-  if (type === "kenderaan") {
-    item.placeholder = "Jenis Kenderaan";
-    item.classList.remove("hidden");
-    tempoh.classList.remove("hidden");
-  }
-
-  if (type === "projektor") {
-    item.placeholder = "Bilangan Projektor";
-    item.classList.remove("hidden");
-    tempoh.classList.remove("hidden");
-  }
-
-  if (type === "kertas_a4") {
-    kuantiti.classList.remove("hidden");
-  }
-}
-
-jenis.addEventListener("change", () => {
-  updateField(jenis.value);
-});
-
-/* ================== SUBMIT ================== */
-form.addEventListener("submit", async e => {
-  e.preventDefault();
-
-  if (!jabatan.value) {
-    msg.innerText = "❌ Sila pilih nama staff dari senarai";
-    return;
-  }
-
-  const type = jenis.value;
-  const today = new Date().toLocaleDateString("ms-MY");
-
-  let payload = {
-    Nama: nama.value,
-    Jabatan: jabatan.value,
-    Tarikh: today
+ d.forEach(s=>{
+  const li=document.createElement("li");
+  li.textContent=s.Nama;
+  li.onclick=()=>{
+    nama.value=s.Nama;
+    jabatan.value=s.Dept;
+    list.innerHTML="";
   };
+  list.appendChild(li);
+ });
+};
 
-  if (type === "alat_tulis") {
-    payload.JenisAlat = item.value;
-    payload.Kuantiti = kuantiti.value;
-  }
+/* ===== FIELD ===== */
+jenis.onchange=()=>{
+ item.className="hide";
+ tempoh.className="hide";
+ kuantiti.className="hide";
+ item.value=tempoh.value=kuantiti.value="";
 
-  if (type === "kenderaan") {
-    payload.JenisKenderaan = item.value;
-    payload.Tempoh = tempoh.value;
-  }
+ if(jenis.value=="alat_tulis"){
+   item.placeholder="Jenis Alat";
+   item.className="";
+   kuantiti.className="";
+ }
+ if(jenis.value=="kenderaan"){
+   item.placeholder="Jenis Kenderaan";
+   item.className="";
+   tempoh.className="";
+ }
+ if(jenis.value=="projektor"){
+   item.placeholder="Bilangan Projektor";
+   item.className="";
+   tempoh.className="";
+ }
+ if(jenis.value=="kertas_a4"){
+   kuantiti.className="";
+ }
+};
 
-  if (type === "projektor") {
-    payload.BilanganProjektor = item.value;
-    payload.Tempoh = tempoh.value;
-  }
+/* ===== SUBMIT ===== */
+f.onsubmit=async(e)=>{
+ e.preventDefault();
+ if(!jabatan.value){m.innerText="Pilih nama dari senarai";return;}
 
-  if (type === "kertas_a4") {
-    payload.Kuantiti = kuantiti.value;
-  }
+ const p={
+  Nama:nama.value,
+  Jabatan:jabatan.value,
+  Tarikh:new Date().toLocaleDateString("ms-MY")
+ };
 
-  const res = await fetch(RESPONSE_API[type], {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+ if(jenis.value=="alat_tulis"){p.JenisAlat=item.value;p.Kuantiti=kuantiti.value;}
+ if(jenis.value=="kenderaan"){p.JenisKenderaan=item.value;p.Tempoh=tempoh.value;}
+ if(jenis.value=="projektor"){p.BilanganProjektor=item.value;p.Tempoh=tempoh.value;}
+ if(jenis.value=="kertas_a4"){p.Kuantiti=kuantiti.value;}
 
-  const json = await res.json();
-  msg.innerText = json.message || "✅ Permohonan berjaya direkodkan";
+ const r=await fetch(API[jenis.value],{
+  method:"POST",
+  headers:{"Content-Type":"application/json"},
+  body:JSON.stringify(p)
+ });
 
-  form.reset();
-  updateField("");
-  staffList.innerHTML = "";
-});
+ const j=await r.json();
+ m.innerText=j.message||"OK";
+ f.reset();
+};
 </script>
-
 </body>
 </html>
