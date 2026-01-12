@@ -27,6 +27,7 @@ button {
   background:#0d6efd;
   color:white;
   border:none;
+  cursor:pointer;
 }
 button:hover { background:#084298; }
 .hidden { display:none; }
@@ -49,9 +50,9 @@ button:hover { background:#084298; }
       <option value="kertas_a4">Kertas A4</option>
     </select>
 
-    <input id="item" placeholder="Jenis / Bilangan">
-    <input id="tempoh" placeholder="Tempoh">
-    <input id="kuantiti" type="number" placeholder="Kuantiti">
+    <input id="item" placeholder="Jenis / Bilangan" class="hidden">
+    <input id="tempoh" placeholder="Tempoh" class="hidden">
+    <input id="kuantiti" type="number" placeholder="Kuantiti" class="hidden">
 
     <button type="submit">Hantar</button>
   </form>
@@ -77,6 +78,8 @@ const tempoh = document.getElementById("tempoh");
 const kuantiti = document.getElementById("kuantiti");
 const form = document.getElementById("form");
 const msg = document.getElementById("msg");
+const nama = document.getElementById("nama");
+const jabatan = document.getElementById("jabatan");
 
 let SESSION_TYPE = null;
 
@@ -120,25 +123,31 @@ const url = params.get("url");
 async function loadSession() {
   if (!url) return;
 
-  const res = await fetch(${SESSION_API}?url=${url});
-  const data = await res.json();
+  try {
+    const res = await fetch(`${SESSION_API}?url=${url}`);
+    const data = await res.json();
 
-  if (!data || data.status === "not_found") {
-    alert("QR tidak sah");
-    return;
+    if (!data || data.status === "not_found") {
+      alert("QR tidak sah");
+      return;
+    }
+
+    document.getElementById("tajuk").innerText = data.butiran;
+
+    const txt = data.butiran.toLowerCase();
+    if (txt.includes("alat")) SESSION_TYPE = "alat_tulis";
+    else if (txt.includes("kenderaan")) SESSION_TYPE = "kenderaan";
+    else if (txt.includes("projektor")) SESSION_TYPE = "projektor";
+    else SESSION_TYPE = "kertas_a4";
+
+    jenis.value = SESSION_TYPE;
+    jenis.disabled = true;
+    updateField(SESSION_TYPE);
+
+  } catch (err) {
+    console.error(err);
+    alert("Gagal load QR session");
   }
-
-  document.getElementById("tajuk").innerText = data.butiran;
-
-  const txt = data.butiran.toLowerCase();
-  if (txt.includes("alat")) SESSION_TYPE = "alat_tulis";
-  else if (txt.includes("kenderaan")) SESSION_TYPE = "kenderaan";
-  else if (txt.includes("projektor")) SESSION_TYPE = "projektor";
-  else SESSION_TYPE = "kertas_a4";
-
-  jenis.value = SESSION_TYPE;
-  jenis.disabled = true;
-  updateField(SESSION_TYPE);
 }
 loadSession();
 
@@ -147,6 +156,11 @@ form.addEventListener("submit", async e => {
   e.preventDefault();
 
   const type = SESSION_TYPE || jenis.value;
+  if (!type) {
+    msg.innerText = "Sila pilih jenis aset";
+    return;
+  }
+
   const today = new Date().toLocaleDateString("ms-MY");
 
   let payload = {
@@ -174,19 +188,22 @@ form.addEventListener("submit", async e => {
     payload.Kuantiti = kuantiti.value;
   }
 
-  const res = await fetch(RESPONSE_API[type], {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+  try {
+    const res = await fetch(RESPONSE_API[type], {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-  const json = await res.json();
-  msg.innerText = json.message || "Berjaya direkodkan";
-  form.reset();
-  if (!SESSION_TYPE) updateField("");
+    const json = await res.json();
+    msg.innerText = json.message || "Berjaya direkodkan";
+    form.reset();
+    if (!SESSION_TYPE) updateField("");
+  } catch (err) {
+    console.error(err);
+    msg.innerText = "Gagal hantar data";
+  }
 });
 </script>
 </body>
-</html>                                                                                                                                                                 
-
-
+</html>
