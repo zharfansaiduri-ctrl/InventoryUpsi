@@ -31,15 +31,27 @@ button {
 }
 button:hover { background:#084298; }
 .hidden { display:none; }
+
+#suggestions {
+  border:1px solid #ccc;
+  background:#fff;
+  position:relative;
+  z-index:10;
+}
+#suggestions div:hover {
+  background:#f1f1f1;
+}
 </style>
 </head>
 
 <body>
 <div class="box">
-  <h2 id="tajuk">Permohonan Aset</h2>
+  <h2>Permohonan Aset</h2>
 
   <form id="form">
-    <input id="nama" placeholder="Nama" required>
+    <input id="nama" placeholder="Nama" autocomplete="off" required>
+    <div id="suggestions" class="hidden"></div>
+
     <input id="jabatan" placeholder="Jabatan" required>
 
     <select id="jenis">
@@ -62,7 +74,7 @@ button:hover { background:#084298; }
 
 <script>
 /* ================== URL API ================== */
-const SESSION_API = "https://script.google.com/macros/s/AKfycbxLDT5eCMednWW-2uVkv0g7UpX8anTtflrsQUwY_lGr62MqSx8_b1VZOVLzk8yrxDeDBA/exec";
+const GET_API = "https://script.google.com/macros/s/AKfycbyLBofOgGDB2opyvDT8BI21m5DSuh1Ih-IqPxD-K1U1B5FOR6djBzWhnfbGipY_c7nf/exec";
 
 const RESPONSE_API = {
   alat_tulis: "https://script.google.com/macros/s/AKfycby1zOlFPLSQ-5v66P_Hsy3rqfxgKgaB4Of8j-M7-8jdRV8WS_5mb_W9V0rB5zWdNry2gw/exec",
@@ -71,17 +83,57 @@ const RESPONSE_API = {
   kertas_a4: "https://script.google.com/macros/s/AKfycby3A910IAwBskOo6joxToCmrvPSc0lKj7Ea6jS_hDYhJ2twDmzPG8Q26fT423jXAYDa/exec"
 };
 
+
 /* ================== ELEMENT ================== */
+const nama = document.getElementById("nama");
+const jabatan = document.getElementById("jabatan");
 const jenis = document.getElementById("jenis");
 const item = document.getElementById("item");
 const tempoh = document.getElementById("tempoh");
 const kuantiti = document.getElementById("kuantiti");
 const form = document.getElementById("form");
 const msg = document.getElementById("msg");
-const nama = document.getElementById("nama");
-const jabatan = document.getElementById("jabatan");
+const suggestions = document.getElementById("suggestions");
 
-let SESSION_TYPE = null;
+/* ================== AUTOCOMPLETE ================== */
+nama.addEventListener("input", async () => {
+  const q = nama.value.trim();
+
+  if (q.length < 2) {
+    suggestions.classList.add("hidden");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${GET_API}?search=${encodeURIComponent(q)}`);
+    const data = await res.json();
+
+    if (!data.length) {
+      suggestions.classList.add("hidden");
+      return;
+    }
+
+    suggestions.innerHTML = "";
+    data.forEach(row => {
+      const div = document.createElement("div");
+      div.style.padding = "6px";
+      div.style.cursor = "pointer";
+      div.innerText = row.Nama;
+
+      div.onclick = () => {
+        nama.value = row.Nama;
+        jabatan.value = row.Dept;
+        suggestions.classList.add("hidden");
+      };
+
+      suggestions.appendChild(div);
+    });
+
+    suggestions.classList.remove("hidden");
+  } catch (err) {
+    console.error(err);
+  }
+});
 
 /* ================== FIELD CONTROL ================== */
 function updateField(type) {
@@ -120,7 +172,7 @@ jenis.addEventListener("change", () => updateField(jenis.value));
 form.addEventListener("submit", async e => {
   e.preventDefault();
 
-  const type = SESSION_TYPE || jenis.value;
+  const type = jenis.value;
   if (!type) {
     msg.innerText = "Sila pilih jenis aset";
     return;
@@ -166,8 +218,7 @@ form.addEventListener("submit", async e => {
     const json = await res.json().catch(()=>({message:"Berjaya direkodkan"}));
     msg.innerText = json.message || "Berjaya direkodkan";
     form.reset();
-    updateField(type);
-
+    suggestions.classList.add("hidden");
   } catch (err) {
     console.error(err);
     msg.innerText = "Gagal hantar data";
@@ -176,3 +227,4 @@ form.addEventListener("submit", async e => {
 </script>
 </body>
 </html>
+
