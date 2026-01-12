@@ -88,13 +88,12 @@ function updateField(type) {
   item.classList.add("hidden");
   tempoh.classList.add("hidden");
   kuantiti.classList.add("hidden");
-  item.type = "text"; // reset input type default
+  item.type = "text";
 
   if (type === "alat_tulis") {
     item.placeholder = "Jenis Alat";
     item.classList.remove("hidden");
     kuantiti.classList.remove("hidden");
-    kuantiti.type = "number";
   }
 
   if (type === "kenderaan") {
@@ -112,48 +111,10 @@ function updateField(type) {
 
   if (type === "kertas_a4") {
     kuantiti.classList.remove("hidden");
-    kuantiti.type = "number";
   }
 }
 
-jenis.addEventListener("change", () => {
-  updateField(jenis.value);
-});
-
-/* ================== QR SESSION ================== */
-const params = new URLSearchParams(window.location.search);
-const url = params.get("url");
-
-async function loadSession() {
-  if (!url) return;
-
-  try {
-    const res = await fetch(`${SESSION_API}?url=${url}`);
-    const data = await res.json();
-
-    if (!data || data.status === "not_found") {
-      alert("QR tidak sah");
-      return;
-    }
-
-    document.getElementById("tajuk").innerText = data.butiran;
-
-    const txt = data.butiran.toLowerCase();
-    if (txt.includes("alat")) SESSION_TYPE = "alat_tulis";
-    else if (txt.includes("kenderaan")) SESSION_TYPE = "kenderaan";
-    else if (txt.includes("projektor")) SESSION_TYPE = "projektor";
-    else SESSION_TYPE = "kertas_a4";
-
-    jenis.value = SESSION_TYPE;
-    jenis.disabled = true;
-    updateField(SESSION_TYPE);
-
-  } catch (err) {
-    console.error(err);
-    alert("Gagal load QR session");
-  }
-}
-loadSession();
+jenis.addEventListener("change", () => updateField(jenis.value));
 
 /* ================== SUBMIT ================== */
 form.addEventListener("submit", async e => {
@@ -165,34 +126,33 @@ form.addEventListener("submit", async e => {
     return;
   }
 
-  const today = new Date();
-  const dd = String(today.getDate()).padStart(2,'0');
-  const mm = String(today.getMonth()+1).padStart(2,'0');
-  const yyyy = today.getFullYear();
-  const formattedDate = `${dd}/${mm}/${yyyy}`;
+  const timestand = new Date().toLocaleString("ms-MY");
 
   let payload = {
     Nama: nama.value,
     Jabatan: jabatan.value,
-    Tarikh: formattedDate
+    JenisAlatan: "",
+    Kuantiti: "",
+    Timestand: timestand
   };
 
   if (type === "alat_tulis") {
-    payload.JenisAlat = item.value;
+    payload.JenisAlatan = item.value;
     payload.Kuantiti = kuantiti.value;
   }
 
   if (type === "kenderaan") {
-    payload.JenisKenderaan = item.value;
-    payload.Tempoh = tempoh.value;
+    payload.JenisAlatan = item.value + " (" + tempoh.value + ")";
+    payload.Kuantiti = "-";
   }
 
   if (type === "projektor") {
-    payload.BilanganProjektor = item.value;
-    payload.Tempoh = tempoh.value;
+    payload.JenisAlatan = "Projektor (" + tempoh.value + ")";
+    payload.Kuantiti = item.value;
   }
 
   if (type === "kertas_a4") {
+    payload.JenisAlatan = "Kertas A4";
     payload.Kuantiti = kuantiti.value;
   }
 
@@ -205,13 +165,10 @@ form.addEventListener("submit", async e => {
 
     const json = await res.json().catch(()=>({message:"Berjaya direkodkan"}));
     msg.innerText = json.message || "Berjaya direkodkan";
-    
     form.reset();
-    if (!SESSION_TYPE) updateField("");
-    else updateField(SESSION_TYPE);
+    updateField(type);
 
-  } 
-  catch (err) {
+  } catch (err) {
     console.error(err);
     msg.innerText = "Gagal hantar data";
   }
