@@ -12,7 +12,7 @@ body { font-family:'League Spartan',sans-serif; background:#f2f2f2; padding:20px
 .form-container { max-width:500px; margin:auto; background:white; padding:30px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1); }
 .logo-container { display:flex; justify-content:center; gap:10px; margin-bottom:20px; }
 .logo-container img { height:40px; }
-h1, h2 { text-align:center; margin-bottom:10px; }
+h1 { text-align:center; margin-bottom:20px; }
 label { font-weight:600; display:block; margin-top:12px; margin-bottom:4px; }
 input, select, button { width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; font-size:14px; }
 button { background:#0d6efd; color:white; border:none; cursor:pointer; margin-top:12px; }
@@ -32,7 +32,7 @@ button:hover { background:#084298; }
 <div class="form-container">
     <div class="logo-container">
         <img src="Screenshot 2026-01-05 160523.png" alt="UPSI">
-      >
+    
     </div>
 
     <h1>Sistem Permohonan Aset</h1>
@@ -61,7 +61,6 @@ button:hover { background:#084298; }
         <input type="text" id="tempoh" placeholder="Tempoh" class="hidden">
         <input type="number" id="kuantiti" placeholder="Kuantiti" class="hidden">
 
-        <!-- Hidden fields -->
         <input type="hidden" id="timestamp" name="timestamp">
 
         <button type="submit" id="submitBtn">Hantar</button>
@@ -79,7 +78,7 @@ const POST_API = {
   kertas_a4: "https://script.google.com/macros/s/AKfycbzhBY_KhGAFRGea-_sNb_yd9QRIXyNBlKNrK5zv5lCYyByGjKgGufZNgYvgCIOug2nH/exec"
 };
 
-let namesData = [], isCustomName = false;
+let namesData = [];
 
 function showMessage(text,type){
     const msg=document.getElementById('message');
@@ -162,17 +161,17 @@ document.getElementById('assetForm').addEventListener('submit',async function(e)
     const kuantitiVal=document.getElementById('kuantiti').value;
 
     let postData={ 
-        Nama:nama,
-        Jabatan:document.getElementById('jabatan').value,
-        JenisAlatan:'',
-        Kuantiti:'-',
-        Timestamp:document.getElementById('timestamp').value
+        Nama: nama,
+        Jabatan: document.getElementById('jabatan').value,
+        "Jenis Alatan": '',
+        Kuantiti: '-',
+        Timestamp: document.getElementById('timestamp').value
     };
 
-    if(jenis==='alat_tulis'){ postData.JenisAlatan=itemVal; postData.Kuantiti=kuantitiVal; }
-    if(jenis==='kenderaan'){ postData.JenisAlatan=itemVal+' ('+tempohVal+')'; }
-    if(jenis==='projektor'){ postData.JenisAlatan='Projektor ('+tempohVal+')'; postData.Kuantiti=itemVal; }
-    if(jenis==='kertas_a4'){ postData.JenisAlatan='Kertas A4'; postData.Kuantiti=kuantitiVal; }
+    if(jenis==='alat_tulis'){ postData["Jenis Alatan"]=itemVal; postData.Kuantiti=kuantitiVal; }
+    if(jenis==='kenderaan'){ postData["Jenis Alatan"]=itemVal+' ('+tempohVal+')'; }
+    if(jenis==='projektor'){ postData["Jenis Alatan"]='Projektor ('+tempohVal+')'; postData.Kuantiti=itemVal; }
+    if(jenis==='kertas_a4'){ postData["Jenis Alatan"]='Kertas A4'; postData.Kuantiti=kuantitiVal; }
 
     try{
         const response=await fetch(POST_API[jenis],{
@@ -197,5 +196,3 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 </body>
 </html>
-
-
