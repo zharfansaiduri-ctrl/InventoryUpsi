@@ -99,11 +99,12 @@ tr:nth-child(even){background:#f9f9f9}
 
 <script>
 const RESPONSE_API = {
-  kenderaan: "https://script.google.com/macros/s/AKfycbwX9UTV_D9XyboaFPKIbmFbEDcAexTZTCnzwxNqcsxUfGlDvmy5Xw_oN3laSkD7_Cd1bg/exec",
-  alat_tulis: "https://script.google.com/macros/s/AKfycbygtOQcmkMaOW88hkgcvbZmgmZ1po-Ay-_BAEH7_7mDFiDKK31E8dVO0bf-81bJXz3c/exec",
-  projektor: "https://script.google.com/macros/s/AKfycbwzTXRPdoPPCXR6LZzKnlurkX7gCGyw9TKHTfCFKzVga4PuiSiHH1-dytHOJvvZLYKS/exec",
-  kertas_a4: "https://script.google.com/macros/s/AKfycbxEpGdUPYETNQakVvy7Bs203MCGKH652wnSIHYUukuI5x9nWc3NiVCTP2jl_aSpTAil/exec"
+  kenderaan: "https://script.google.com/macros/s/AKfycbxDMYDYe0mmpZw0BzRQpMuNrYZkfhWP-0HJ049kH0vRKjXzHU6qDps7YJOzp--541uC/exec?sheet=kenderaan",
+  alat_tulis: "https://script.google.com/macros/s/AKfycbxDMYDYe0mmpZw0BzRQpMuNrYZkfhWP-0HJ049kH0vRKjXzHU6qDps7YJOzp--541uC/exec?sheet=alat_tulis",
+  projektor: "https://script.google.com/macros/s/AKfycbxDMYDYe0mmpZw0BzRQpMuNrYZkfhWP-0HJ049kH0vRKjXzHU6qDps7YJOzp--541uC/exec?sheet=projektor",
+  kertas_a4: "https://script.google.com/macros/s/AKfycbxDMYDYe0mmpZw0BzRQpMuNrYZkfhWP-0HJ049kH0vRKjXzHU6qDps7YJOzp--541uC/exec?sheet=kertas_a4"
 };
+
 // redirect kalau belum login
 if(sessionStorage.getItem('isLoggedIn') !== 'true'){
   window.location.href = 'adminlogin.html';
@@ -160,4 +161,3 @@ function logout(){
 
 </body>
 </html>
-
