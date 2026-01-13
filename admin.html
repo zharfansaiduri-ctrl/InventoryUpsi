@@ -113,7 +113,6 @@ const SHEET_MAP = {
   kertas_a4: 'Kertas A4'
 };
 
-
 /**
  * API ENDPOINT
  */
@@ -154,6 +153,7 @@ function loadSheet(type){
         return;
       }
 
+      // generate table
       const headers = Object.keys(data[0]);
       let html = `<table><thead><tr>`;
       headers.forEach(h=> html += `<th>${h}</th>`);
@@ -180,9 +180,7 @@ function logout(){
   sessionStorage.removeItem('isLoggedIn');
   window.location.href = 'adminlogin.html';
 }
-<script src="https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html/exec?callback=paparData"></script>
+</script>
 
 </body>
 </html>
-
-
