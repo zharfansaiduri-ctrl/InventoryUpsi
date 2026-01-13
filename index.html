@@ -30,6 +30,7 @@ button {
   cursor:pointer;
 }
 button:hover { background:#084298; }
+
 .hidden { display:none; }
 
 #suggestions {
@@ -38,12 +39,12 @@ button:hover { background:#084298; }
   position:relative;
   z-index:10;
 }
+#suggestions div {
+  padding:6px;
+  cursor:pointer;
+}
 #suggestions div:hover {
   background:#f1f1f1;
-}
-#msg {
-  margin-top:10px;
-  font-weight:bold;
 }
 </style>
 </head>
@@ -77,7 +78,9 @@ button:hover { background:#084298; }
 </div>
 
 <script>
-/* ================== URL API ================== */
+/* ================== API URL ================== */
+
+// 🔹 GET (QR / Autocomplete)
 const GET_API = "https://script.google.com/macros/s/AKfycbxasoAjEyWdr57vkkotprtYckPZlKrEFkWySrMkTi1_wLMlTkgUij7uTvAILPrzvrmv/exec";
 
 const RESPONSE_API = {
@@ -102,91 +105,106 @@ const suggestions = document.getElementById("suggestions");
 /* ================== AUTOCOMPLETE ================== */
 nama.addEventListener("input", async () => {
   const q = nama.value.trim();
-  if (q.length < 2) return suggestions.classList.add("hidden");
-
-  try {
-    const res = await fetch(`${GET_API}?search=${encodeURIComponent(q)}`);
-    const data = await res.json();
-
-    if (!data.length) return suggestions.classList.add("hidden");
-
-    suggestions.innerHTML = "";
-    data.forEach(r => {
-      const d = document.createElement("div");
-      d.innerText = r.Nama;
-      d.style.padding = "6px";
-      d.onclick = () => {
-        nama.value = r.Nama;
-        jabatan.value = r.Dept;
-        suggestions.classList.add("hidden");
-      };
-      suggestions.appendChild(d);
-    });
-    suggestions.classList.remove("hidden");
-  } catch (err) {
-    console.error(err);
+  if (q.length < 2) {
+    suggestions.classList.add("hidden");
+    return;
   }
+
+  const res = await fetch(`${API_QR}?search=${encodeURIComponent(q)}`);
+  const data = await res.json();
+
+  if (!data.length) {
+    suggestions.classList.add("hidden");
+    return;
+  }
+
+  suggestions.innerHTML = "";
+  data.forEach(r => {
+    const d = document.createElement("div");
+    d.textContent = r.Nama;
+    d.onclick = () => {
+      nama.value = r.Nama;
+      jabatan.value = r.Jabatan;
+      suggestions.classList.add("hidden");
+    };
+    suggestions.appendChild(d);
+  });
+
+  suggestions.classList.remove("hidden");
 });
 
 /* ================== FIELD CONTROL ================== */
 function updateField(type) {
-  [item,tempoh,kuantiti].forEach(i=>i.classList.add("hidden"));
-  item.type="text";
+  [item, tempoh, kuantiti].forEach(i => i.classList.add("hidden"));
+  item.type = "text";
 
-  if(type==="alat_tulis"){item.placeholder="Jenis Alat";item.classList.remove("hidden");kuantiti.classList.remove("hidden");}
-  if(type==="kenderaan"){item.placeholder="Jenis Kenderaan";item.classList.remove("hidden");tempoh.classList.remove("hidden");}
-  if(type==="projektor"){item.type="number";item.placeholder="Bilangan Projektor";item.classList.remove("hidden");tempoh.classList.remove("hidden");}
-  if(type==="kertas_a4"){kuantiti.placeholder="Kuantiti";kuantiti.classList.remove("hidden");}
+  if (type === "alat_tulis") {
+    item.placeholder = "Jenis Alat";
+    item.classList.remove("hidden");
+    kuantiti.classList.remove("hidden");
+  }
+
+  if (type === "kenderaan") {
+    item.placeholder = "Jenis Kenderaan";
+    item.classList.remove("hidden");
+    tempoh.classList.remove("hidden");
+  }
+
+  if (type === "projektor") {
+    item.type = "number";
+    item.classList.remove("hidden");
+    tempoh.classList.remove("hidden");
+  }
+
+  if (type === "kertas_a4") {
+    kuantiti.classList.remove("hidden");
+  }
 }
-jenis.addEventListener("change",()=>updateField(jenis.value));
+jenis.addEventListener("change", () => updateField(jenis.value));
 
 /* ================== SUBMIT ================== */
 form.addEventListener("submit", async e => {
   e.preventDefault();
-  msg.innerText = "";
 
-  // Validasi input tambahan
-  if(jenis.value === ""){
-    msg.innerText = "Sila pilih jenis aset.";
-    return;
-  }
-  if((!item.value && item.classList.contains("hidden")===false) ||
-     (!tempoh.value && tempoh.classList.contains("hidden")===false) ||
-     (!kuantiti.value && kuantiti.classList.contains("hidden")===false)){
-    msg.innerText = "Sila lengkapkan semua maklumat yang diperlukan.";
-    return;
-  }
-
-  const timestand = new Date().toLocaleString("ms-MY");
-
-  let payload = {
+  const payload = {
     Nama: nama.value,
     Jabatan: jabatan.value,
     JenisAlatan: "",
     Kuantiti: "",
-    Timestamp: timestand
+    Timestand: new Date().toISOString()
   };
 
-  if (jenis.value==="alat_tulis"){payload.JenisAlatan=item.value;payload.Kuantiti=kuantiti.value;}
-  if (jenis.value==="kenderaan"){payload.JenisAlatan=item.value+" ("+tempoh.value+")";payload.Kuantiti="-";}
-  if (jenis.value==="projektor"){payload.JenisAlatan="Projektor ("+tempoh.value+")";payload.Kuantiti=item.value;}
-  if (jenis.value==="kertas_a4"){payload.JenisAlatan="Kertas A4";payload.Kuantiti=kuantiti.value;}
-
-  try {
-    const res = await fetch(RESPONSE_API[jenis.value],{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify(payload)
-    });
-
-    const json = await res.json();
-    msg.innerText = json.message || "Berjaya";
-    form.reset();
-    updateField(""); // reset field
-  } catch (err) {
-    console.error(err);
-    msg.innerText = "Gagal menghantar data.";
+  if (jenis.value === "alat_tulis") {
+    payload.JenisAlatan = item.value;
+    payload.Kuantiti = kuantiti.value;
   }
+
+  if (jenis.value === "kenderaan") {
+    payload.JenisAlatan = item.value + " (" + tempoh.value + ")";
+    payload.Kuantiti = "-";
+  }
+
+  if (jenis.value === "projektor") {
+    payload.JenisAlatan = "Projektor (" + tempoh.value + ")";
+    payload.Kuantiti = item.value;
+  }
+
+  if (jenis.value === "kertas_a4") {
+    payload.JenisAlatan = "Kertas A4";
+    payload.Kuantiti = kuantiti.value;
+  }
+
+  const url = POST_API[jenis.value];
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const json = await res.json();
+  msg.innerText = json.message || "Berjaya";
+  form.reset();
 });
 </script>
 </body>
