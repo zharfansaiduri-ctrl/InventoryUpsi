@@ -78,18 +78,18 @@ button:hover { background:#084298; }
 </div>
 
 <script>
-/* ================== API URL ================== */
+/* ================== API ================== */
 
-// 🔹 GET (QR / Autocomplete)
+// GET → staff list / QR lookup
 const GET_API = "https://script.google.com/macros/s/AKfycbxasoAjEyWdr57vkkotprtYckPZlKrEFkWySrMkTi1_wLMlTkgUij7uTvAILPrzvrmv/exec";
 
-const RESPONSE_API = {
+// POST → ikut jenis aset
+const POST_API = {
   alat_tulis: "https://script.google.com/macros/s/AKfycbwUCpamgEwFaBO44A0j38ZrmEQieNgO3g7W4opAjXIjxZUloYz8YZwZSBOHIbvSzjucVQ/exec",
   kenderaan: "https://script.google.com/macros/s/AKfycbyfjpPuXbWp1HCHDvPWmOszSb1qZlidi1caKzWSz3uRLsTVZSWq4tKYCgOVZYhuz-K5HA/exec",
   projektor: "https://script.google.com/macros/s/AKfycbwswyLJbV0hL9HZ1ODE4yWAzcloZ-P8NB6faXEV2qF6ycN3Elt1-qkKXjSND75F4OVt2w/exec",
   kertas_a4: "https://script.google.com/macros/s/AKfycbxNdDozlMB4Iz6ZEPN4_9wfoeFMdnA9r_hl2IOi-rpJLWfMf5LdNXQBIpb8_4EI2NeT/exec"
 };
-
 
 /* ================== ELEMENT ================== */
 const nama = document.getElementById("nama");
@@ -102,15 +102,37 @@ const form = document.getElementById("form");
 const msg = document.getElementById("msg");
 const suggestions = document.getElementById("suggestions");
 
+/* ================== AUTO ISI DARI QR ================== */
+window.addEventListener("load", async () => {
+  const params = new URLSearchParams(window.location.search);
+  const namaQR = params.get("nama");
+
+  if (!namaQR) return;
+
+  const decoded = decodeURIComponent(namaQR);
+  nama.value = decoded;
+  nama.readOnly = true;
+
+  const res = await fetch(`${GET_API}?search=${encodeURIComponent(decoded)}`);
+  const data = await res.json();
+
+  if (data.length) {
+    jabatan.value = data[0].Jabatan;
+    jabatan.readOnly = true;
+  }
+});
+
 /* ================== AUTOCOMPLETE ================== */
 nama.addEventListener("input", async () => {
+  if (nama.readOnly) return;
+
   const q = nama.value.trim();
   if (q.length < 2) {
     suggestions.classList.add("hidden");
     return;
   }
 
-  const res = await fetch(`${API_QR}?search=${encodeURIComponent(q)}`);
+  const res = await fetch(`${GET_API}?search=${encodeURIComponent(q)}`);
   const data = await res.json();
 
   if (!data.length) {
@@ -135,32 +157,15 @@ nama.addEventListener("input", async () => {
 
 /* ================== FIELD CONTROL ================== */
 function updateField(type) {
-  [item, tempoh, kuantiti].forEach(i => i.classList.add("hidden"));
-  item.type = "text";
+  [item,tempoh,kuantiti].forEach(i=>i.classList.add("hidden"));
+  item.type="text";
 
-  if (type === "alat_tulis") {
-    item.placeholder = "Jenis Alat";
-    item.classList.remove("hidden");
-    kuantiti.classList.remove("hidden");
-  }
-
-  if (type === "kenderaan") {
-    item.placeholder = "Jenis Kenderaan";
-    item.classList.remove("hidden");
-    tempoh.classList.remove("hidden");
-  }
-
-  if (type === "projektor") {
-    item.type = "number";
-    item.classList.remove("hidden");
-    tempoh.classList.remove("hidden");
-  }
-
-  if (type === "kertas_a4") {
-    kuantiti.classList.remove("hidden");
-  }
+  if(type==="alat_tulis"){item.placeholder="Jenis Alat";item.classList.remove("hidden");kuantiti.classList.remove("hidden");}
+  if(type==="kenderaan"){item.placeholder="Jenis Kenderaan";item.classList.remove("hidden");tempoh.classList.remove("hidden");}
+  if(type==="projektor"){item.type="number";item.classList.remove("hidden");tempoh.classList.remove("hidden");}
+  if(type==="kertas_a4"){kuantiti.classList.remove("hidden");}
 }
-jenis.addEventListener("change", () => updateField(jenis.value));
+jenis.addEventListener("change",()=>updateField(jenis.value));
 
 /* ================== SUBMIT ================== */
 form.addEventListener("submit", async e => {
@@ -174,32 +179,15 @@ form.addEventListener("submit", async e => {
     Timestand: new Date().toISOString()
   };
 
-  if (jenis.value === "alat_tulis") {
-    payload.JenisAlatan = item.value;
-    payload.Kuantiti = kuantiti.value;
-  }
+  if (jenis.value==="alat_tulis"){payload.JenisAlatan=item.value;payload.Kuantiti=kuantiti.value;}
+  if (jenis.value==="kenderaan"){payload.JenisAlatan=item.value+" ("+tempoh.value+")";payload.Kuantiti="-";}
+  if (jenis.value==="projektor"){payload.JenisAlatan="Projektor ("+tempoh.value+")";payload.Kuantiti=item.value;}
+  if (jenis.value==="kertas_a4"){payload.JenisAlatan="Kertas A4";payload.Kuantiti=kuantiti.value;}
 
-  if (jenis.value === "kenderaan") {
-    payload.JenisAlatan = item.value + " (" + tempoh.value + ")";
-    payload.Kuantiti = "-";
-  }
-
-  if (jenis.value === "projektor") {
-    payload.JenisAlatan = "Projektor (" + tempoh.value + ")";
-    payload.Kuantiti = item.value;
-  }
-
-  if (jenis.value === "kertas_a4") {
-    payload.JenisAlatan = "Kertas A4";
-    payload.Kuantiti = kuantiti.value;
-  }
-
-  const url = POST_API[jenis.value];
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
+  const res = await fetch(POST_API[jenis.value],{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify(payload)
   });
 
   const json = await res.json();
