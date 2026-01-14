@@ -120,8 +120,8 @@ button:disabled{opacity:.6;cursor:not-allowed}
       <option value="kertas_a4">Kertas A4</option>
     </select>
 
-    <input type="text" id="item" class="hidden">
-    <input type="text" id="tempoh" class="hidden" placeholder="Tempoh">
+    <input type="text" id="item" class="hidden" placeholder="">
+    <input type="text" id="tempoh" class="hidden" placeholder="Tempoh (contoh: 2 hari)">
     <input type="number" id="kuantiti" class="hidden" placeholder="Kuantiti">
 
     <input type="hidden" id="timestamp">
@@ -156,8 +156,7 @@ function showMessage(msg,type){
 async function loadNames(){
   const res=await fetch(NAMES_API);
   const data=await res.json();
-
-  namesData=data.map(r=>{
+  namesData = data.map(r=>{
     const o={};
     for(let k in r) o[k.trim()]=r[k];
     return o;
@@ -201,62 +200,82 @@ function setupAutocomplete(){
   });
 }
 
-document.getElementById('jenisSelect').addEventListener('change',function(){
-  ['item','tempoh','kuantiti'].forEach(id=>document.getElementById(id).classList.add('hidden'));
-  if(this.value==='alat_tulis'){
-    item.placeholder='Jenis Alat';
+const item = document.getElementById('item');
+const tempoh = document.getElementById('tempoh');
+const kuantiti = document.getElementById('kuantiti');
+const jenisSelect = document.getElementById('jenisSelect');
+const namaInput = document.getElementById('namaInput');
+const jabatan = document.getElementById('jabatan');
+const timestamp = document.getElementById('timestamp');
+const submitBtn = document.getElementById('submitBtn');
+
+jenisSelect.addEventListener('change', function() {
+  ['item','tempoh','kuantiti'].forEach(id => document.getElementById(id).classList.add('hidden'));
+
+  if(this.value === 'alat_tulis'){
+    item.placeholder = 'Jenis Alat';
     item.classList.remove('hidden');
     kuantiti.classList.remove('hidden');
   }
-  if(this.value==='kenderaan'){
-    item.placeholder='Jenis Kenderaan';
+
+  if(this.value === 'kenderaan'){
+    item.placeholder = 'Jenis Kenderaan';
     item.classList.remove('hidden');
     tempoh.classList.remove('hidden');
   }
-  if(this.value==='projektor'){
-    item.placeholder='Bilangan Projektor';
+
+  if(this.value === 'projektor'){
+    item.placeholder = 'Bilangan Projektor';
     item.classList.remove('hidden');
     tempoh.classList.remove('hidden');
   }
-  if(this.value==='kertas_a4'){
+
+  if(this.value === 'kertas_a4'){
     kuantiti.classList.remove('hidden');
   }
 });
 
-document.getElementById('assetForm').addEventListener('submit',async e=>{
+document.getElementById('assetForm').addEventListener('submit', async e=>{
   e.preventDefault();
 
-  const jenis=jenisSelect.value;
+  const jenis = jenisSelect.value;
   if(!jenis) return showMessage('Sila pilih jenis aset','warning');
 
-  submitBtn.disabled=true;
-  timestamp.value=new Date().toLocaleString('ms-MY');
+  submitBtn.disabled = true;
+  timestamp.value = new Date().toLocaleString('ms-MY');
 
-  let data={
-    nama:namaInput.value,
-    jabatan:jabatan.value,
-    jenis_alatan:item.value || '-',
-    kuantiti:kuantiti.value || '-',
+  let jenis_alatan_val = item.value || '-';
+
+  // Gabungkan jenis + tempoh untuk kenderaan & projektor
+  if(jenis === 'kenderaan' || jenis === 'projektor'){
+    if(tempoh.value) jenis_alatan_val = `${item.value} (${tempoh.value})`;
+  }
+
+  let data = {
+    nama: namaInput.value,
+    jabatan: jabatan.value,
+    jenis_alatan: jenis_alatan_val,
+    kuantiti: kuantiti.value || '-',
     tempoh: tempoh.value || '-',
-    timestamp:timestamp.value
+    timestamp: timestamp.value
   };
 
-  const res=await fetch(POST_API[jenis],{
+  const res = await fetch(POST_API[jenis], {
     method:'POST',
     headers:{'Content-Type':'application/x-www-form-urlencoded'},
-    body:new URLSearchParams({data:JSON.stringify(data)})
+    body:new URLSearchParams({data: JSON.stringify(data)})
   });
 
-  const r=await res.json();
+  const r = await res.json();
   r.status==='success'
     ? showMessage('✓ Permohonan berjaya','success')
     : showMessage('✗ Gagal hantar','error');
 
-  submitBtn.disabled=false;
+  submitBtn.disabled = false;
   e.target.reset();
 });
 
-document.addEventListener('DOMContentLoaded',async()=>{
+document.addEventListener('DOMContentLoaded', async ()=>{
   await loadNames();
   setupAutocomplete();
 });
@@ -264,5 +283,3 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 </body>
 </html>
-
-
