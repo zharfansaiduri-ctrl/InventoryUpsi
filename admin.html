@@ -141,56 +141,10 @@ function loadSheet(type){
 
   container.innerHTML = `<div class="loading">Memuatkan data ${sheetName}...</div>`;
 
-  fetch(apiUrl, { mode: 'cors' })
-  .then(res => {
-    if(!res.ok){
-      throw new Error("HTTP " + res.status);
-    }
-    return res.text();
-  })
-  .then(text => {
-    try {
-      const data = JSON.parse(text);
-      handleData(data);
-    } catch {
-      throw new Error("Response bukan JSON (deploy/access salah)");
-    }
-  })
-  .catch(err=>{
-    document.getElementById('tableContainer').innerHTML =
-      `<div class="loading">Ralat API: ${err.message}</div>`;
-  });
-
-function handleData(data){
-  const container = document.getElementById('tableContainer');
-
-  if(data.status === 'error'){
-    container.innerHTML = `<div class="loading">API Error: ${data.message}</div>`;
-    return;
-  }
-
-  if(!Array.isArray(data) || data.length === 0){
-    container.innerHTML = `<div class="loading">Tiada data ditemui.</div>`;
-    return;
-  }
-
-  const headers = Object.keys(data[0]);
-  let html = `<table><thead><tr>`;
-  headers.forEach(h=> html += `<th>${h}</th>`);
-  html += `</tr></thead><tbody>`;
-
-  data.forEach(row=>{
-    html += `<tr>`;
-    headers.forEach(h=>{
-      html += `<td>${row[h] ?? '-'}</td>`;
-    });
-    html += `</tr>`;
-  });
-
-  html += `</tbody></table>`;
-  container.innerHTML = html;
-}
-
+  fetch(apiUrl)
+    .then(res=>{
+      if(!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
     })
     .then(data=>{
       // 🔴 ERROR HANDLING IKUT APPS SCRIPT
