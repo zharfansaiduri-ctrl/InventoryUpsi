@@ -9,19 +9,29 @@
 <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg1:#1A2350;
+  --bg2:#1FA2FF;
+  --card:#F4F6F8;
+  --accent:#12D8FA;
+  --muted:#6B7280;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'League Spartan',sans-serif;}
 body{
-  font-family:'League Spartan',sans-serif;
-  background:#f2f2f2;
-  padding:20px;
+  background: linear-gradient(135deg, var(--bg1), var(--bg2));
+  min-height: 100vh;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }
 .form-container{
   max-width:500px;
-  margin:auto;
-  background:white;
+  width:100%;
+  background: var(--card);
   padding:30px;
-  border-radius:12px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.1);
+  border-radius:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.2);
 }
 .logo-container{
   display:flex;
@@ -29,18 +39,20 @@ body{
   margin-bottom:20px;
 }
 .logo-container img{
-  height:120px; /* saiz logo diperbesar */
+  height:120px;
   width:auto;
 }
-h1{text-align:center;margin-bottom:20px}
-
+h1{
+  text-align:center;
+  margin-bottom:20px;
+  color: var(--bg1);
+}
 label{
   font-weight:600;
   display:block;
   margin-top:12px;
   margin-bottom:4px;
 }
-
 input,select,button{
   width:100%;
   padding:10px;
@@ -48,15 +60,15 @@ input,select,button{
   border:1px solid #ccc;
   font-size:14px;
 }
-
 button{
-  background:#0d6efd;
+  background:linear-gradient(135deg,var(--bg2),var(--accent));
   color:white;
   border:none;
   cursor:pointer;
   margin-top:14px;
+  font-weight:600;
 }
-button:hover{background:#084298}
+button:hover{opacity:.9}
 button:disabled{opacity:.6;cursor:not-allowed}
 
 .hidden{display:none}
@@ -78,9 +90,8 @@ button:disabled{opacity:.6;cursor:not-allowed}
 .name-option:hover{background:#eef6ff}
 .name-highlight{
   font-weight:bold;
-  color:#0d6efd;
+  color:var(--bg2);
 }
-
 .message{
   margin-top:12px;
   padding:10px;
@@ -100,7 +111,7 @@ button:disabled{opacity:.6;cursor:not-allowed}
 <div class="form-container">
 
   <div class="logo-container">
-    <img src="Screenshot 2026-01-14 161757.png" alt="Logo">
+    <img src="img/UHSB-Logo-resize.png" alt="Logo">
   </div>
 
   <h1>Sistem Permohonan Aset</h1>
@@ -138,7 +149,6 @@ button:disabled{opacity:.6;cursor:not-allowed}
 
 <script>
 const NAMES_API = 'https://script.google.com/macros/s/AKfycbyOiDjp4mLgDGtnc2eOPCiajJOHqC1z0UUVevH2mBro9XY2KM8c56oTqhV-nifyDkJK/exec';
-
 const POST_API = {
   alat_tulis:"https://script.google.com/macros/s/AKfycbz0msu-Bk1yexgmVsrtPt9vbvu5xqJZLFlj43Bk5JMCJUugCMBlbPOafnSgXbdVsnk6iQ/exec",
   kenderaan:"https://script.google.com/macros/s/AKfycbyNvyn-WzAB-GSx3Fpcd-JD9JmUwPCW4nu2VQh6zKpn5q3Maqgt0Y4UU-Z_CYg_p77fUg/exec",
@@ -147,14 +157,6 @@ const POST_API = {
 };
 
 let namesData=[];
-
-function showMessage(msg,type){
-  const el=document.getElementById('message');
-  el.textContent=msg;
-  el.className=`message ${type}`;
-  el.style.display='block';
-  if(type==='success') setTimeout(()=>el.style.display='none',5000);
-}
 
 async function loadNames(){
   const res=await fetch(NAMES_API);
@@ -178,10 +180,8 @@ function setupAutocomplete(){
   nama.addEventListener('input',()=>{
     const q=nama.value.trim();
     if(!q){drop.classList.add('hidden');jab.value='';return;}
-
     const filtered=namesData.filter(x=>x.Nama.toLowerCase().includes(q.toLowerCase()));
     drop.innerHTML='';
-
     filtered.forEach(item=>{
       const d=document.createElement('div');
       d.className='name-option';
@@ -193,7 +193,6 @@ function setupAutocomplete(){
       };
       drop.appendChild(d);
     });
-
     drop.classList.toggle('hidden',filtered.length===0);
   });
 
@@ -240,20 +239,14 @@ jenisSelect.addEventListener('change', function() {
 
 document.getElementById('assetForm').addEventListener('submit', async e=>{
   e.preventDefault();
-
   const jenis = jenisSelect.value;
   if(!jenis) return showMessage('Sila pilih jenis aset','warning');
-
   submitBtn.disabled = true;
   timestamp.value = new Date().toLocaleString('ms-MY');
-
   let jenis_alatan_val = item.value || '-';
-
-  // Gabungkan jenis + tempoh untuk kenderaan & projektor
   if(jenis === 'kenderaan' || jenis === 'projektor'){
     if(tempoh.value) jenis_alatan_val = `${item.value} (${tempoh.value})`;
   }
-
   let data = {
     nama: namaInput.value,
     jabatan: jabatan.value,
@@ -262,21 +255,26 @@ document.getElementById('assetForm').addEventListener('submit', async e=>{
     tempoh: tempoh.value || '-',
     timestamp: timestamp.value
   };
-
   const res = await fetch(POST_API[jenis], {
     method:'POST',
     headers:{'Content-Type':'application/x-www-form-urlencoded'},
     body:new URLSearchParams({data: JSON.stringify(data)})
   });
-
   const r = await res.json();
   r.status==='success'
     ? showMessage('✓ Permohonan berjaya','success')
     : showMessage('✗ Gagal hantar','error');
-
   submitBtn.disabled = false;
   e.target.reset();
 });
+
+function showMessage(msg,type){
+  const el=document.getElementById('message');
+  el.textContent=msg;
+  el.className=`message ${type}`;
+  el.style.display='block';
+  if(type==='success') setTimeout(()=>el.style.display='none',5000);
+}
 
 document.addEventListener('DOMContentLoaded', async ()=>{
   await loadNames();
@@ -286,4 +284,3 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
 </body>
 </html>
-
