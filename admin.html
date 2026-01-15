@@ -83,7 +83,7 @@ body{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;p
 
 /* data + dashboard */
 .filter{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;}
-select,input{padding:10px;border-radius:8px;border:1px solid #ccc;}
+select,input{padding:10px;border-radius:8px;border:1px solid #ccc;flex:1;min-width:150px;}
 .table-wrap{background:var(--card);border-radius:12px;overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:14px;}
 th,td{padding:10px;border-bottom:1px solid #ddd;}
@@ -126,7 +126,24 @@ th{background:var(--bg1);color:white;}
    <option>Projektor</option>
    <option>KertasA4</option>
   </select>
+  <select id="fBulan" onchange="filterData()">
+   <option value="all">Semua Bulan</option>
+   <option value="01">Januari</option>
+   <option value="02">Februari</option>
+   <option value="03">Mac</option>
+   <option value="04">April</option>
+   <option value="05">Mei</option>
+   <option value="06">Jun</option>
+   <option value="07">Julai</option>
+   <option value="08">Ogos</option>
+   <option value="09">September</option>
+   <option value="10">Oktober</option>
+   <option value="11">November</option>
+   <option value="12">Disember</option>
+  </select>
   <input id="search" placeholder="Cari nama / jabatan" oninput="filterData()">
+ </div>
+ <div style="margin-bottom:15px;">
   <button class="btn" onclick="exportExcel()">Export Excel</button>
  </div>
  <div class="table-wrap">
@@ -249,11 +266,14 @@ async function loadData(){
 
 function filterData(){
  const j=fJenis.value;
+ const b=fBulan.value;
  const q=search.value.toLowerCase();
- filtered=all.filter(d=>
-  (j==='all'||d.JenisPermohonan===j) &&
-  ((d.Nama||'').toLowerCase().includes(q)||(d.Jabatan||'').toLowerCase().includes(q))
- );
+ filtered=all.filter(d=>{
+  const bulanData = d.Timestamp ? String(new Date(d.Timestamp).getMonth()+1).padStart(2,'0') : '';
+  return (j==='all'||d.JenisPermohonan===j) &&
+   (b==='all'||bulanData===b) &&
+   ((d.Nama||'').toLowerCase().includes(q)||(d.Jabatan||'').toLowerCase().includes(q));
+ });
  render();updateDash();
 }
 
