@@ -125,7 +125,7 @@ button:disabled{opacity:.6;cursor:not-allowed}
     <label>Jabatan <span style="color:red">*</span></label>
     <input type="text" id="jabatan" required>
 
-    <label>Jenis Aset</label>
+    <label id="jenisLabel">Jenis Aset</label>
     <select id="jenisSelect">
       <option value="">-- Pilih --</option>
       <option value="alat_tulis">Alat Tulis</option>
@@ -211,6 +211,7 @@ const namaInput = document.getElementById('namaInput');
 const jabatan = document.getElementById('jabatan');
 const timestamp = document.getElementById('timestamp');
 const submitBtn = document.getElementById('submitBtn');
+const jenisLabel = document.getElementById('jenisLabel');
 
 function updateFieldsByJenis(jenis){
   ['item','tempoh','kuantiti'].forEach(id => document.getElementById(id).classList.add('hidden'));
@@ -239,14 +240,14 @@ function updateFieldsByJenis(jenis){
   }
 }
 
-jenisSelect.addEventListener('change',()=>updateFieldsByJenis(jenisSelect.value));
-
 // --- QR auto-set jenis dari URL ---
 const params = new URLSearchParams(window.location.search);
 const jenisParam = params.get('jenis'); // alat_tulis / kenderaan / projektor / kertas_a4
 if(jenisParam){
   jenisSelect.value = jenisParam;
   updateFieldsByJenis(jenisParam);
+  jenisSelect.disabled = true; // lock dropdown
+  jenisLabel.textContent = "Jenis Aset: " + jenisParam.replace('_',' '); // tunjuk label
 }
 
 // --- Form submit ---
