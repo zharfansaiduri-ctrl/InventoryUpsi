@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sistem Permohonan Aset</title>
-
 <link rel="icon" type="image/x-icon" href="img/UHSB-Logo-resize.png">
 <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -59,6 +58,10 @@ input,select,button{
   border-radius:8px;
   border:1px solid #ccc;
   font-size:14px;
+}
+select:disabled{
+  background:#eee;
+  color:#555;
 }
 button{
   background:linear-gradient(135deg,var(--bg2),var(--accent));
@@ -241,11 +244,12 @@ function updateFieldsByJenis(jenis){
 
 jenisSelect.addEventListener('change',()=>updateFieldsByJenis(jenisSelect.value));
 
-// --- QR auto-set jenis dari URL ---
+// --- QR auto-set jenis dari URL & lock select ---
 const params = new URLSearchParams(window.location.search);
 const jenisParam = params.get('jenis'); // alat_tulis / kenderaan / projektor / kertas_a4
 if(jenisParam){
   jenisSelect.value = jenisParam;
+  jenisSelect.disabled = true; // Lock select
   updateFieldsByJenis(jenisParam);
 }
 
