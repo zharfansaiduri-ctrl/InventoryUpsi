@@ -291,8 +291,17 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   // --- QR auto-set jenis dari URL ---
   const params = new URLSearchParams(window.location.search);
   const jenisParam = params.get('jenis'); // alat_tulis / kenderaan / projektor / kertas_a4
+  
+  console.log('URL params:', window.location.search);
+  console.log('jenisParam:', jenisParam);
+  console.log('jenisSelect.value BEFORE:', jenisSelect.value);
+  
   if(jenisParam){
+    console.log('Inside IF - setting value to:', jenisParam);
     jenisSelect.value = jenisParam;
+    console.log('jenisSelect.value AFTER:', jenisSelect.value);
+    console.log('jenisSelect.disabled:', jenisSelect.disabled);
+    
     updateFieldsByJenis(jenisParam);
     jenisSelect.disabled = true; // lock dropdown
     jenisSelect.style.pointerEvents = 'none'; // extra lock
@@ -300,6 +309,8 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     jenisSelect.style.backgroundColor = '#e5e7eb'; // grey background
     jenisLabel.textContent = "Jenis Aset: " + jenisParam.replace('_',' ').toUpperCase(); // tunjuk label lebih jelas
     jenisLabel.style.color = '#059669'; // green color untuk locked state
+  } else {
+    console.log('NO jenisParam found!');
   }
 });
 </script>
