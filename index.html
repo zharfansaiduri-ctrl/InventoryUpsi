@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sistem Permohonan Aset</title>
+
 <link rel="icon" type="image/x-icon" href="img/UHSB-Logo-resize.png">
 <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -58,10 +59,6 @@ input,select,button{
   border-radius:8px;
   border:1px solid #ccc;
   font-size:14px;
-}
-select:disabled{
-  background:#eee;
-  color:#555;
 }
 button{
   background:linear-gradient(135deg,var(--bg2),var(--accent));
@@ -136,7 +133,6 @@ button:disabled{opacity:.6;cursor:not-allowed}
       <option value="projektor">Projektor</option>
       <option value="kertas_a4">Kertas A4</option>
     </select>
-    <input type="hidden" id="jenisHidden" name="jenis">
 
     <input type="text" id="item" class="hidden" placeholder="">
     <input type="text" id="tempoh" class="hidden" placeholder="Tempoh (contoh: 2 hari)">
@@ -211,7 +207,6 @@ const item = document.getElementById('item');
 const tempoh = document.getElementById('tempoh');
 const kuantiti = document.getElementById('kuantiti');
 const jenisSelect = document.getElementById('jenisSelect');
-const jenisHidden = document.getElementById('jenisHidden');
 const namaInput = document.getElementById('namaInput');
 const jabatan = document.getElementById('jabatan');
 const timestamp = document.getElementById('timestamp');
@@ -220,46 +215,44 @@ const submitBtn = document.getElementById('submitBtn');
 function updateFieldsByJenis(jenis){
   ['item','tempoh','kuantiti'].forEach(id => document.getElementById(id).classList.add('hidden'));
   item.value=''; tempoh.value=''; kuantiti.value='';
+
   if(jenis === 'alat_tulis'){
     item.placeholder = 'Jenis Alat';
     item.classList.remove('hidden');
     kuantiti.classList.remove('hidden');
   }
+
   if(jenis === 'kenderaan'){
     item.placeholder = 'Jenis Kenderaan';
     item.classList.remove('hidden');
     tempoh.classList.remove('hidden');
   }
+
   if(jenis === 'projektor'){
     item.placeholder = 'Bilangan Projektor';
     item.classList.remove('hidden');
     tempoh.classList.remove('hidden');
   }
+
   if(jenis === 'kertas_a4'){
     kuantiti.classList.remove('hidden');
   }
 }
 
-// Event listener untuk select (untuk user pilih jika tak QR)
-jenisSelect.addEventListener('change',()=> {
-  jenisHidden.value = jenisSelect.value; // sync ke hidden
-  updateFieldsByJenis(jenisSelect.value);
-});
+jenisSelect.addEventListener('change',()=>updateFieldsByJenis(jenisSelect.value));
 
-// --- QR auto-set jenis dari URL & lock select ---
+// --- QR auto-set jenis dari URL ---
 const params = new URLSearchParams(window.location.search);
 const jenisParam = params.get('jenis'); // alat_tulis / kenderaan / projektor / kertas_a4
 if(jenisParam){
   jenisSelect.value = jenisParam;
-  jenisSelect.disabled = true; // Lock select
-  jenisHidden.value = jenisParam; // Hantar value semasa submit
   updateFieldsByJenis(jenisParam);
 }
 
 // --- Form submit ---
 document.getElementById('assetForm').addEventListener('submit', async e=>{
   e.preventDefault();
-  const jenis = jenisSelect.disabled ? jenisHidden.value : jenisSelect.value;
+  const jenis = jenisSelect.value;
   if(!jenis) return showMessage('Sila pilih jenis aset','warning');
   submitBtn.disabled = true;
   timestamp.value = new Date().toLocaleString('ms-MY');
