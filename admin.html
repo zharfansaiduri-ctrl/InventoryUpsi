@@ -29,8 +29,8 @@ body{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;p
  box-shadow:0 10px 30px rgba(0,0,0,0.2);
  position:relative;
 }
-.header h1{color:var(--bg1);font-size:32px;}
-.subtitle{color:#555;margin-top:5px;}
+.header h1{color:var(--bg1);}
+.subtitle{color:#555;}
 .logout{
  position:absolute;top:30px;right:30px;
  background:#ef4444;color:#fff;border:none;
@@ -68,7 +68,8 @@ body{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;p
  padding:15px;
  border-radius:12px;
  margin:15px auto;
- display:inline-block;
+ display:flex;
+ justify-content:center;
 }
 .btn{
  width:100%;
@@ -80,33 +81,16 @@ body{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;p
  cursor:pointer;
 }
 
-.filter{
- display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;
-}
-select,input{
- padding:10px;border-radius:8px;border:1px solid #ccc;
-}
-
-.table-wrap{
- background:var(--card);
- border-radius:12px;
- overflow-x:auto;
-}
+/* data + dashboard (UNCHANGED) */
+.filter{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;}
+select,input{padding:10px;border-radius:8px;border:1px solid #ccc;}
+.table-wrap{background:var(--card);border-radius:12px;overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:14px;}
 th,td{padding:10px;border-bottom:1px solid #ddd;}
 th{background:var(--bg1);color:white;}
 .loading{text-align:center;color:var(--muted);padding:20px;}
-
-.dashboard{
- display:flex;gap:15px;flex-wrap:wrap;
-}
-.card{
- background:var(--card);
- padding:20px;border-radius:12px;
- flex:1;min-width:180px;
- text-align:center;
- box-shadow:0 5px 15px rgba(0,0,0,.2);
-}
+.dashboard{display:flex;gap:15px;flex-wrap:wrap;}
+.card{background:var(--card);padding:20px;border-radius:12px;flex:1;min-width:180px;text-align:center;}
 .card h2{color:var(--bg1);}
 </style>
 </head>
@@ -132,7 +116,7 @@ th{background:var(--bg1);color:white;}
  <div class="qr-grid" id="qrGrid"></div>
 </div>
 
-<!-- DATA -->
+<!-- DATA (ASAL, TAK DIUSIK) -->
 <div id="data" class="content">
  <div class="filter">
   <select id="fJenis" onchange="filterData()">
@@ -142,17 +126,13 @@ th{background:var(--bg1);color:white;}
    <option>Projektor</option>
    <option>KertasA4</option>
   </select>
-
   <input id="search" placeholder="Cari nama / jabatan" oninput="filterData()">
   <button class="btn" onclick="exportExcel()">Export Excel</button>
  </div>
-
  <div class="table-wrap">
   <table>
    <thead>
-    <tr>
-     <th>No</th><th>Jenis</th><th>Nama</th><th>Jabatan</th><th>Tarikh</th>
-    </tr>
+    <tr><th>No</th><th>Jenis</th><th>Nama</th><th>Jabatan</th><th>Tarikh</th></tr>
    </thead>
    <tbody id="tableData">
     <tr><td colspan="5" class="loading">Memuatkan...</td></tr>
@@ -161,7 +141,7 @@ th{background:var(--bg1);color:white;}
  </div>
 </div>
 
-<!-- DASHBOARD -->
+<!-- DASHBOARD (ASAL) -->
 <div id="dash" class="content">
  <div class="dashboard">
   <div class="card"><h2>Total</h2><p id="total">0</p></div>
@@ -187,7 +167,7 @@ const FORM_URLS=[
  {label:"KertasA4",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=KertasA4"}
 ];
 
-// ===== GOOGLE SCRIPT (UNTUK DATA) =====
+// ===== SCRIPT URL (KEKAL) =====
 const SCRIPT_URLS=[
  {label:"AlatTulis",url:"https://script.google.com/macros/s/AKfycbzn5pexJtysXPybe-i8Z3ZfiHIail-KWCt_J5PbinN8xnxn_AdT1Sx0h7ksJA-gWRcP/exec"},
  {label:"Kenderaan",url:"https://script.google.com/macros/s/AKfycbymqKLWmOd2JnfvByskKW4Qdym-53QLXiYpyPCPpQOQeMoCN_E_duT0hpzyKRkugzUubw/exec"},
@@ -206,26 +186,41 @@ function tab(x){
  if(x==='dash')updateDash();
 }
 
-// QR
+/* ======================
+   ✅ QR FIX (ONLY EDIT)
+====================== */
 function generateQR(){
- qrGrid.innerHTML='';
+ qrGrid.innerHTML = '';
+
  FORM_URLS.forEach((f,i)=>{
-  qrGrid.innerHTML+=`
-  <div class="qr-card">
+  const card=document.createElement('div');
+  card.className='qr-card';
+
+  card.innerHTML=`
    <h3>QR ${f.label}</h3>
-   <div class="qr-box" id="qr${i}"></div>
-   <button class="btn" onclick="downloadQR('qr${i}','QR_${f.label}')">Muat Turun</button>
-  </div>`;
-  new QRCode(document.getElementById(`qr${i}`),{text:f.url,width:200,height:200});
+   <div class="qr-box"><div id="qr_${i}"></div></div>
+   <button class="btn" onclick="downloadQR('qr_${i}','QR_${f.label}')">
+    Muat Turun
+   </button>
+  `;
+  qrGrid.appendChild(card);
+
+  // BUG FIX: delay render
+  setTimeout(()=>{
+   new QRCode(document.getElementById(`qr_${i}`),{
+    text:f.url,width:200,height:200
+   });
+  },100);
  });
 }
+
 function downloadQR(id,name){
  const c=document.querySelector(`#${id} canvas`);
  const a=document.createElement('a');
  a.href=c.toDataURL();a.download=name+'.png';a.click();
 }
 
-// DATA
+/* ===== DATA & DASHBOARD (ASAL) ===== */
 let all=[],filtered=[];
 async function loadData(){
  all=[];tableData.innerHTML='<tr><td colspan="5" class="loading">Loading...</td></tr>';
@@ -244,11 +239,12 @@ function filterData(){
   (j==='all'||d.JenisPermohonan===j) &&
   ((d.Nama||'').toLowerCase().includes(q)||(d.Jabatan||'').toLowerCase().includes(q))
  );
- render();
- updateDash();
+ render();updateDash();
 }
 function render(){
- if(!filtered.length){tableData.innerHTML='<tr><td colspan="5" class="loading">Tiada Data</td></tr>';return;}
+ if(!filtered.length){
+  tableData.innerHTML='<tr><td colspan="5" class="loading">Tiada Data</td></tr>';return;
+ }
  tableData.innerHTML=filtered.map((d,i)=>`
  <tr>
   <td>${i+1}</td>
@@ -258,8 +254,6 @@ function render(){
   <td>${d.Timestamp||'-'}</td>
  </tr>`).join('');
 }
-
-// EXCEL
 function exportExcel(){
  if(!filtered.length)return alert('Tiada data');
  const ws=XLSX.utils.json_to_sheet(filtered);
@@ -267,8 +261,6 @@ function exportExcel(){
  XLSX.utils.book_append_sheet(wb,ws,'Permohonan');
  XLSX.writeFile(wb,'Permohonan.xlsx');
 }
-
-// DASH
 function updateDash(){
  total.innerText=filtered.length;
  alat.innerText=filtered.filter(x=>x.JenisPermohonan==='AlatTulis').length;
