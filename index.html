@@ -290,31 +290,38 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   
   // --- QR auto-set jenis dari URL ---
   const params = new URLSearchParams(window.location.search);
-  let jenisParam = params.get('jenis'); // alat_tulis / kenderaan / projektor / kertas_a4
+  let jenisParam = params.get('jenis');
   
   console.log('URL params:', window.location.search);
   console.log('jenisParam (original):', jenisParam);
   
-  // Normalize parameter - convert to lowercase with underscore
-  if(jenisParam){
-    jenisParam = jenisParam.toLowerCase().replace(/\s+/g, '_');
-    console.log('jenisParam (normalized):', jenisParam);
+  // Filter exact matching untuk QR code
+  let mappedJenis = '';
+  if(jenisParam === 'AlatTulis'){
+    mappedJenis = 'alat_tulis';
+  } else if(jenisParam === 'Kenderaan'){
+    mappedJenis = 'kenderaan';
+  } else if(jenisParam === 'Projektor'){
+    mappedJenis = 'projektor';
+  } else if(jenisParam === 'KertasA4'){
+    mappedJenis = 'kertas_a4';
   }
   
+  console.log('mappedJenis:', mappedJenis);
   console.log('jenisSelect.value BEFORE:', jenisSelect.value);
   
-  if(jenisParam){
-    console.log('Inside IF - setting value to:', jenisParam);
-    jenisSelect.value = jenisParam;
+  if(mappedJenis){
+    console.log('Inside IF - setting value to:', mappedJenis);
+    jenisSelect.value = mappedJenis;
     console.log('jenisSelect.value AFTER:', jenisSelect.value);
     console.log('jenisSelect.disabled:', jenisSelect.disabled);
     
-    updateFieldsByJenis(jenisParam);
+    updateFieldsByJenis(mappedJenis);
     jenisSelect.disabled = true; // lock dropdown
     jenisSelect.style.pointerEvents = 'none'; // extra lock
     jenisSelect.style.opacity = '0.6'; // visual feedback
     jenisSelect.style.backgroundColor = '#e5e7eb'; // grey background
-    jenisLabel.textContent = "Jenis Aset: " + jenisParam.replace('_',' ').toUpperCase(); // tunjuk label lebih jelas
+    jenisLabel.textContent = "Jenis Aset: " + jenisParam.toUpperCase(); // show original param
     jenisLabel.style.color = '#059669'; // green color untuk locked state
   } else {
     console.log('NO jenisParam found!');
