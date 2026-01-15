@@ -295,7 +295,11 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     jenisSelect.value = jenisParam;
     updateFieldsByJenis(jenisParam);
     jenisSelect.disabled = true; // lock dropdown
+    jenisSelect.style.pointerEvents = 'none'; // extra lock
+    jenisSelect.style.opacity = '0.6'; // visual feedback
+    jenisSelect.style.backgroundColor = '#e5e7eb'; // grey background
     jenisLabel.textContent = "Jenis Aset: " + jenisParam.replace('_',' ').toUpperCase(); // tunjuk label lebih jelas
+    jenisLabel.style.color = '#059669'; // green color untuk locked state
   }
 });
 </script>
