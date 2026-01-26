@@ -121,10 +121,10 @@ th{background:var(--bg1);color:white;}
  <div class="filter">
   <select id="fJenis" onchange="filterData()">
    <option value="all">Semua Jenis</option>
-   <option>AlatTulis</option>
-   <option>Kenderaan</option>
-   <option>Projektor</option>
-   <option>KertasA4</option>
+   <option>AlatTulis2026</option>
+   <option>Kenderaan2026</option>
+   <option>Projektor2026</option>
+   <option>KertasA42026</option>
   </select>
   <select id="fBulan" onchange="filterData()">
    <option value="all">Semua Bulan</option>
@@ -162,10 +162,10 @@ th{background:var(--bg1);color:white;}
 <div id="dash" class="content">
  <div class="dashboard">
   <div class="card"><h2>Total</h2><p id="total">0</p></div>
-  <div class="card"><h2>AlatTulis</h2><p id="alat">0</p></div>
+  <div class="card"><h2>Alat Tulis</h2><p id="alat">0</p></div>
   <div class="card"><h2>Kenderaan</h2><p id="ken">0</p></div>
   <div class="card"><h2>Projektor</h2><p id="pro">0</p></div>
-  <div class="card"><h2>KertasA4</h2><p id="ker">0</p></div>
+  <div class="card"><h2>Kertas A4</h2><p id="ker">0</p></div>
  </div>
 </div>
 
@@ -176,20 +176,20 @@ th{background:var(--bg1);color:white;}
 if(sessionStorage.getItem('isLoggedIn')!=='true')location.href='adminlogin.html';
 function logout(){sessionStorage.clear();location.href='adminlogin.html';}
 
-// ===== URL BORANG =====
+// ===== URL BORANG (Generate QR dengan format 2026) =====
 const FORM_URLS=[
- {label:"AlatTulis",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=AlatTulis"},
- {label:"Kenderaan",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=Kenderaan"},
- {label:"Projektor",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=Projektor"},
- {label:"KertasA4",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=KertasA4"}
+ {label:"AlatTulis2026",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=AlatTulis2026"},
+ {label:"Kenderaan2026",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=Kenderaan2026"},
+ {label:"Projektor2026",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=Projektor2026"},
+ {label:"KertasA42026",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=KertasA42026"}
 ];
 
 // ===== SCRIPT URL =====
 const SCRIPT_URLS=[
- {label:"AlatTulis",url:"https://script.google.com/macros/s/AKfycbzn5pexJtysXPybe-i8Z3ZfiHIail-KWCt_J5PbinN8xnxn_AdT1Sx0h7ksJA-gWRcP/exec"},
- {label:"Kenderaan",url:"https://script.google.com/macros/s/AKfycbymqKLWmOd2JnfvByskKW4Qdym-53QLXiYpyPCPpQOQeMoCN_E_duT0hpzyKRkugzUubw/exec"},
- {label:"Projektor",url:"https://script.google.com/macros/s/AKfycby8VsDJS0IjepKP_oiUzCCczHiraGMChzX6cFJ76nXaDM3A-417NkBiYrXHC1Va9IyB/exec"},
- {label:"KertasA4",url:"https://script.google.com/macros/s/AKfycbwuR75-PMmNPjhi8l0xvPl3HGPwcl3097VTmIA_Vu-nC64eP8rcnFfJ6RF01DXKwfHS/exec"}
+ {label:"AlatTulis2026",url:"https://script.google.com/macros/s/AKfycbzn5pexJtysXPybe-i8Z3ZfiHIail-KWCt_J5PbinN8xnxn_AdT1Sx0h7ksJA-gWRcP/exec"},
+ {label:"Kenderaan2026",url:"https://script.google.com/macros/s/AKfycbymqKLWmOd2JnfvByskKW4Qdym-53QLXiYpyPCPpQOQeMoCN_E_duT0hpzyKRkugzUubw/exec"},
+ {label:"Projektor2026",url:"https://script.google.com/macros/s/AKfycby8VsDJS0IjepKP_oiUzCCczHiraGMChzX6cFJ76nXaDM3A-417NkBiYrXHC1Va9IyB/exec"},
+ {label:"KertasA42026",url:"https://script.google.com/macros/s/AKfycbwuR75-PMmNPjhi8l0xvPl3HGPwcl3097VTmIA_Vu-nC64eP8rcnFfJ6RF01DXKwfHS/exec"}
 ];
 
 // TAB
@@ -303,10 +303,10 @@ function exportExcel(){
 
 function updateDash(){
  total.innerText=filtered.length;
- alat.innerText=filtered.filter(x=>x.JenisPermohonan==='AlatTulis').length;
- ken.innerText=filtered.filter(x=>x.JenisPermohonan==='Kenderaan').length;
- pro.innerText=filtered.filter(x=>x.JenisPermohonan==='Projektor').length;
- ker.innerText=filtered.filter(x=>x.JenisPermohonan==='KertasA4').length;
+ alat.innerText=filtered.filter(x=>x.JenisPermohonan==='AlatTulis2026').length;
+ ken.innerText=filtered.filter(x=>x.JenisPermohonan==='Kenderaan2026').length;
+ pro.innerText=filtered.filter(x=>x.JenisPermohonan==='Projektor2026').length;
+ ker.innerText=filtered.filter(x=>x.JenisPermohonan==='KertasA42026').length;
 }
 
 document.addEventListener('DOMContentLoaded',generateQR);
