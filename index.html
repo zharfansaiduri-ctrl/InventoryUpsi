@@ -287,19 +287,19 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   await loadNames();
   setupAutocomplete();
   
-  // --- QR auto-set jenis dari URL ---
+  // --- QR auto-set jenis dari URL (FLEXIBLE - terima dengan dan tanpa 2026) ---
   const params = new URLSearchParams(window.location.search);
   let jenisParam = params.get('jenis');
   
-  // Filter exact matching untuk QR code yang generate dari Admin
+  // Flexible mapping - terima format lama dan baru
   let mappedJenis = '';
-  if(jenisParam === 'AlatTulis'){
+  if(jenisParam === 'AlatTulis' || jenisParam === 'AlatTulis2026'){
     mappedJenis = 'alat_tulis';
-  } else if(jenisParam === 'Kenderaan'){
+  } else if(jenisParam === 'Kenderaan' || jenisParam === 'Kenderaan2026'){
     mappedJenis = 'kenderaan';
-  } else if(jenisParam === 'Projektor'){
+  } else if(jenisParam === 'Projektor' || jenisParam === 'Projektor2026'){
     mappedJenis = 'projektor';
-  } else if(jenisParam === 'KertasA4'){
+  } else if(jenisParam === 'KertasA4' || jenisParam === 'KertasA42026'){
     mappedJenis = 'kertas_a4';
   }
   
@@ -318,4 +318,3 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
 </body>
 </html>
-
