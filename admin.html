@@ -351,10 +351,8 @@ function extractItems(d, forExport=false){
    }
   }
 
-  if(forExport) return parts.map(p=>`${p.label}: ${p.val}`).join(' | ');
-  return parts.length
-   ?`<div style="display:flex;flex-direction:column;gap:2px;">${parts.map(p=>`<span>${p.icon} <b>${p.label}:</b> ${p.val}</span>`).join('')}</div>`
-   :'-';
+  const lineText = parts.map(p=>`${p.label}: ${p.val}`).join(', ');
+  return lineText || '-';
  }
 
  // Jenis lain
