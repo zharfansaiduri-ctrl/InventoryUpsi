@@ -138,7 +138,6 @@ th{background:var(--bg1);color:white;}
    <option value="all">Semua Jenis</option>
    <option>AlatTulis2026</option>
    <option>Kenderaan2026</option>
-   <option>PermohonanKenderaan2026</option>
    <option>Projektor2026</option>
   </select>
   <select id="fBulan" onchange="filterData()">
@@ -179,7 +178,6 @@ th{background:var(--bg1);color:white;}
   <div class="card"><h2>Total</h2><p id="total">0</p></div>
   <div class="card"><h2>Alat Tulis</h2><p id="alat">0</p></div>
   <div class="card"><h2>Kenderaan</h2><p id="ken">0</p></div>
-  <div class="card"><h2>Permohonan Kenderaan</h2><p id="pgken">0</p></div>
   <div class="card"><h2>Projektor</h2><p id="pro">0</p></div>
  </div>
 </div>
@@ -194,14 +192,12 @@ function logout(){sessionStorage.clear();location.href='adminlogin.html';}
 const FORM_URLS=[
  {label:"AlatTulis2026",url:"https://ict-upsiholdings.github.io/assetinventorysystem/index.html?jenis=AlatTulis2026"},
  {label:"Kenderaan2026",url:"https://ict-upsiholdings.github.io/assetinventorysystem/index.html?jenis=Kenderaan2026"},
- {label:"PermohonanKenderaan2026",url:"https://ict-upsiholdings.github.io/assetinventorysystem/index.html?jenis=PermohonanKenderaan2026"},
  {label:"Projektor2026",url:"https://ict-upsiholdings.github.io/assetinventorysystem/index.html?jenis=Projektor2026"}
 ];
 
 const SCRIPT_URLS=[
  {label:"AlatTulis2026",url:"https://script.google.com/macros/s/AKfycbyXUmQO6701Tv7f7vl7xuFcVgdvw0vKUSUiCjNiTx_blv2XPaYL1dPenP09ulcwc6Ug6w/exec"},
  {label:"Kenderaan2026",url:"https://script.google.com/macros/s/AKfycby0eimKxmekifIZFVHw4HnQCaIVmpXQiYJ27usQpNv7v1kCVanOyqo1X-d-N4msUKnq/exec"},
- {label:"PermohonanKenderaan2026",url:"https://script.google.com/macros/s/AKfycbzv_OAsVHSyarm6mTFXILvFH0458FvV_8PUBdoSAeK3XPrn9nqhePD_CMRrpLWcsBMl/exec"},
  {label:"Projektor2026",url:"https://script.google.com/macros/s/AKfycbwp9cqsZMSqcRrB04SQLWtkR0ryjATCw113ES2cogQ3A1jlD8XOLyJ0hQ1hNJCmTknf/exec"}
 ];
 
@@ -253,103 +249,6 @@ function downloadQR(id,name){
 /* ===== DATA & DASHBOARD ===== */
 let all=[],filtered=[];
 
- // ── FORMAT TARIKH: output DD/MM/YYYY ──────────────────────────────────
-function formatTarikh(val){
- if(!val||val==='-'||val==='') return '-';
- // Jika dah dalam format DD/MM/YYYY
- if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(String(val))) return val;
- // Parse ISO atau mana-mana format date
- const d=new Date(val);
- if(!isNaN(d)){
-  const p=n=>String(n).padStart(2,'0');
-  return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`;
- }
- return val;
-}
-
-// ── FORMAT MASA: output 12-jam (8:30 PG / 4:00 PTG) ─────────────────
-function formatMasa(val){
- if(!val||val==='-'||val==='') return '-';
-
- let h=-1, m=0;
-
- // CASE 1: Google Sheets simpan masa sebagai ISO string dengan tarikh 1899-12-30
- // Contoh: "1899-12-30T04:42:35.000Z" → ambil UTC hours & minutes
- if(typeof val==='string' && val.includes('T')){
-  const d=new Date(val);
-  if(!isNaN(d)){
-   h=d.getUTCHours();
-   m=d.getUTCMinutes();
-  }
- }
- // CASE 2: Nombor perpuluhan Excel (0.0–1.0 mewakili satu hari penuh)
- // Contoh: 0.3541667 ≈ 8:30 AM
- else if(!isNaN(parseFloat(val)) && parseFloat(val)>=0 && parseFloat(val)<1){
-  const totalMin=Math.round(parseFloat(val)*24*60);
-  h=Math.floor(totalMin/60)%24;
-  m=totalMin%60;
- }
- // CASE 3: String "HH:MM" format 24 jam
- else if(typeof val==='string'){
-  const ampm=val.match(/(\d{1,2}):(\d{2})\s*(AM|PM|PG|PTG|PAGI|PETANG)/i);
-  if(ampm){
-   h=parseInt(ampm[1]); m=parseInt(ampm[2]);
-   const per=ampm[3].toUpperCase();
-   if((per==='PM'||per==='PTG'||per==='PETANG')&&h!==12) h+=12;
-   if((per==='AM'||per==='PG'||per==='PAGI')&&h===12) h=0;
-  } else {
-   const hm=val.match(/(\d{1,2}):(\d{2})/);
-   if(hm){h=parseInt(hm[1]);m=parseInt(hm[2]);}
-  }
- }
-
- if(h<0) return String(val); // Tak dapat parse
-
- // Tukar ke 12 jam
- const suffix=h<12?'PG':'PTG';
- const h12=h%12||12;
- const p=n=>String(n).padStart(2,'0');
- return `${h12}:${p(m)} ${suffix}`;
-}
-
-// ── FORMAT TIMESTAMP (kolum Tarikh Hantar) ────────────────────────────
-function formatDateTime(iso){
- if(!iso) return '-';
- const d=new Date(iso);
- if(isNaN(d)) return iso;
- const p=n=>String(n).padStart(2,'0');
- const h=d.getHours();
- const suffix=h<12?'PG':'PTG';
- const h12=h%12||12;
- return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${h12}:${p(d.getMinutes())} ${suffix}`;
-}
-
-// ── getField case-insensitive ─────────────────────────────────────────
-function getField(obj,...names){
- for(const name of names){
-  if(obj[name]!==undefined&&obj[name]!==''&&obj[name]!==null) return obj[name];
-  const lo=name.toLowerCase();
-  for(const key in obj){
-   if(key.toLowerCase()===lo&&obj[key]!==''&&obj[key]!==null) return obj[key];
-  }
- }
- return null;
-}
-
- 
-function extractItems(d, forExport=false){
- if(d.JenisPermohonan==='PermohonanKenderaan2026'){
-  const parts=[];
-  const jenisKen   =getField(d,'JenisKenderaan','Jenis_kenderaan','jenis_kenderaan','jenis kenderaan','Kenderaan');
-  const namaPemandu=getField(d,'NamaPemandu','Nama_pemandu','nama_pemandu','nama pemandu','Pemandu');
-  const lokasi     =getField(d,'Lokasi','lokasi','Destinasi','destinasi','Tempat');
-  const tujuan     =getField(d,'Tujuan','tujuan','Sebab','Keperluan');
-  const tarikhRaw  =getField(d,'Tarikh','tarikh','TarikhPerjalanan','tarikh_perjalanan','TarikhPenggunaan');
-  const masaRaw    =getField(d,'Masa','masa','MasaPerjalanan','masa_perjalanan','Waktu','MasaBerangkat');
-
-  const tarikhFmt=formatTarikh(tarikhRaw);
-  const masaFmt  =formatMasa(masaRaw);
-  
 // ✅ Convert timestamp sheet sahaja, ikut masa sheet
 function formatDateTime(iso){
  if(!iso) return '-';
@@ -459,7 +358,6 @@ function updateDash(){
  total.innerText=filtered.length;
  alat.innerText=filtered.filter(x=>x.JenisPermohonan==='AlatTulis2026').length;
  ken.innerText=filtered.filter(x=>x.JenisPermohonan==='Kenderaan2026').length;
- per.innerText =filtered.filter(x=>x.JenisPermohonan==='PermohonanKenderaan2026').length;
  pro.innerText=filtered.filter(x=>x.JenisPermohonan==='Projektor2026').length;
 }
 
