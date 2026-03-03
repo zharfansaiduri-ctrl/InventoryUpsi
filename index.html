@@ -129,32 +129,32 @@ button:disabled{opacity:.6;cursor:not-allowed}
     <select id="jenisSelect">
       <option value="">-- Pilih --</option>
       <option value="alat_tulis">Alat Tulis</option>
-      <option value="kenderaan">Kenderaan (Permohonan)</option>
-      <option value="penggunaan_kenderaan">Kenderaan (Penggunaan)</option>
+      <option value="kenderaan">Kenderaan (Penggunaan)</option>
+      <option value="permohonan_kenderaan">Kenderaan (Permohonan)</option>
       <option value="projektor">Projektor</option>
     </select>
 
-    <!-- Alat Tulis -->
-    <input type="text" id="item" class="hidden" placeholder="">
+    <!-- ── ALAT TULIS ── -->
+    <input type="text"   id="item"     class="hidden" placeholder="Jenis Alat">
     <input type="number" id="kuantiti" class="hidden" placeholder="Kuantiti">
 
-    <!-- Kenderaan Permohonan -->
-    <input type="text" id="jenisKenderaan" class="hidden" placeholder="Jenis Kenderaan">
-    <input type="text" id="masa" class="hidden" placeholder="Masa">
-    <input type="text" id="namaPemandu" class="hidden" placeholder="Nama Pemandu">
-    <input type="text" id="lokasi" class="hidden" placeholder="Lokasi">
-    <input type="text" id="tujuan" class="hidden" placeholder="Tujuan">
-    <input type="number" id="bacaanOdo" class="hidden" placeholder="Bacaan Odometer (km)">
+    <!-- ── KENDERAAN PENGGUNAAN (ada odometer) ── -->
+    <input type="text"   id="jenisKenderaan" class="hidden" placeholder="Jenis Kenderaan">
+    <input type="text"   id="masa"           class="hidden" placeholder="Masa">
+    <input type="text"   id="namaPemandu"    class="hidden" placeholder="Nama Pemandu">
+    <input type="text"   id="lokasi"         class="hidden" placeholder="Lokasi">
+    <input type="text"   id="tujuan"         class="hidden" placeholder="Tujuan">
+    <input type="number" id="bacaanOdo"      class="hidden" placeholder="Bacaan Odometer (km)">
 
-    <!-- Kenderaan Permohonan (tanpa odo, tarikh+masa manual) -->
+    <!-- ── PERMOHONAN KENDERAAN (tarikh+masa manual, TIADA odometer) ── -->
     <input type="text" id="pgJenisKenderaan" class="hidden" placeholder="Jenis Kenderaan">
-    <input type="text" id="pgNamaPemandu" class="hidden" placeholder="Nama Pemandu">
-    <input type="text" id="pgLokasi" class="hidden" placeholder="Lokasi">
-    <input type="text" id="pgTujuan" class="hidden" placeholder="Tujuan">
-    <input type="date" id="pgTarikh" class="hidden">
-    <input type="time" id="pgMasa" class="hidden">
+    <input type="text" id="pgNamaPemandu"    class="hidden" placeholder="Nama Pemandu">
+    <input type="text" id="pgLokasi"         class="hidden" placeholder="Lokasi">
+    <input type="text" id="pgTujuan"         class="hidden" placeholder="Tujuan">
+    <input type="date" id="pgTarikh"         class="hidden">
+    <input type="time" id="pgMasa"           class="hidden">
 
-    <!-- Projektor -->
+    <!-- ── PROJEKTOR ── -->
     <input type="text" id="noProjektor" class="hidden" placeholder="No Projektor">
 
     <input type="hidden" id="timestamp">
@@ -168,94 +168,84 @@ button:disabled{opacity:.6;cursor:not-allowed}
 
 <script>
 const NAMES_API = 'https://script.google.com/macros/s/AKfycbx6kMJIKKJOj3wOE71pALIxQxT0gTI9khFoTjNH8BSiSxVEhn4QiMpFpPXbUX8SrQDiXg/exec';
+
 const POST_API = {
-  alat_tulis:"https://script.google.com/macros/s/AKfycbwBQtsg3QjNGMM8z3wZw61VS0jkGKP2BHc6j2Du7HklazaiqGEemal1JvwPJ-7EzBTLLQ/exec",
-  kenderaan:"https://script.google.com/macros/s/AKfycbxvMxEIGXqZA8mlgYLsMFgYkNNFekaqOAhucDPfNhlsZwTj5P-470ar73BaQSo_AnsO4w/exec",
-  permohonan_kenderaan:"https://script.google.com/macros/s/AKfycbyKuQGGGwdrCdMZJlNNes-DZTUdV85PQFvnZdfcLbhkHX3lsGQe7nM-GJiPDJ8Ir7tHKw/exec", // ← Tukar ke URL Google Script baru untuk sheet Penggunaan Kenderaan
-  projektor:"https://script.google.com/macros/s/AKfycbw3pI9-V5RT_38OuIMddcCsJeKtWh7n3Z6Z2pQWfTpbG20Boavt2ZkKS0Uz4fRH0cYW/exec"
+  alat_tulis:           "https://script.google.com/macros/s/AKfycbwBQtsg3QjNGMM8z3wZw61VS0jkGKP2BHc6j2Du7HklazaiqGEemal1JvwPJ-7EzBTLLQ/exec",
+  kenderaan:            "https://script.google.com/macros/s/AKfycbxvMxEIGXqZA8mlgYLsMFgYkNNFekaqOAhucDPfNhlsZwTj5P-470ar73BaQSo_AnsO4w/exec",
+  permohonan_kenderaan: "https://script.google.com/macros/s/AKfycbyKuQGGGwdrCdMZJlNNes-DZTUdV85PQFvnZdfcLbhkHX3lsGQe7nM-GJiPDJ8Ir7tHKw/exec",
+  projektor:            "https://script.google.com/macros/s/AKfycbw3pI9-V5RT_38OuIMddcCsJeKtWh7n3Z6Z2pQWfTpbG20Boavt2ZkKS0Uz4fRH0cYW/exec"
 };
-let namesData=[];
+
+let namesData = [];
 
 async function loadNames(){
-  const res=await fetch(NAMES_API);
-  const data=await res.json();
-  namesData = data.map(r=>{
-    const o={};
-    for(let k in r) o[k.trim()]=r[k];
+  const res  = await fetch(NAMES_API);
+  const data = await res.json();
+  namesData  = data.map(r => {
+    const o = {};
+    for(let k in r) o[k.trim()] = r[k];
     return o;
   });
 }
 
-function highlight(text,term){
-  return text.replace(new RegExp(`(${term})`,'ig'),'<span class="name-highlight">$1</span>');
+function highlight(text, term){
+  return text.replace(new RegExp(`(${term})`, 'ig'), '<span class="name-highlight">$1</span>');
 }
 
 function setupAutocomplete(){
-  const nama=document.getElementById('namaInput');
-  const jab=document.getElementById('jabatan');
-  const drop=document.getElementById('nameDropdown');
+  const nama = document.getElementById('namaInput');
+  const jab  = document.getElementById('jabatan');
+  const drop = document.getElementById('nameDropdown');
 
-  nama.addEventListener('input',()=>{
-    const q=nama.value.trim();
-    if(!q){drop.classList.add('hidden');jab.value='';return;}
-    const filtered=namesData.filter(x=>x.Nama.toLowerCase().includes(q.toLowerCase()));
-    drop.innerHTML='';
-    filtered.forEach(item=>{
-      const d=document.createElement('div');
-      d.className='name-option';
-      d.innerHTML=highlight(item.Nama,q);
-      d.onclick=()=>{
-        nama.value=item.Nama;
-        jab.value = item.Jabatan || item.Dept || '';
+  nama.addEventListener('input', () => {
+    const q    = nama.value.trim();
+    if(!q){ drop.classList.add('hidden'); jab.value = ''; return; }
+    const hits = namesData.filter(x => x.Nama.toLowerCase().includes(q.toLowerCase()));
+    drop.innerHTML = '';
+    hits.forEach(item => {
+      const d = document.createElement('div');
+      d.className = 'name-option';
+      d.innerHTML = highlight(item.Nama, q);
+      d.onclick   = () => {
+        nama.value = item.Nama;
+        jab.value  = item.Jabatan || item.Dept || '';
         drop.classList.add('hidden');
       };
       drop.appendChild(d);
     });
-    drop.classList.toggle('hidden',filtered.length===0);
+    drop.classList.toggle('hidden', hits.length === 0);
   });
 
-  document.addEventListener('click',e=>{
+  document.addEventListener('click', e => {
     if(!drop.contains(e.target) && !nama.contains(e.target))
       drop.classList.add('hidden');
   });
 }
 
-// --- Fields ---
-const item = document.getElementById('item');
-const kuantiti = document.getElementById('kuantiti');
-const jenisKenderaan = document.getElementById('jenisKenderaan');
-const masa = document.getElementById('masa');
-const namaPemandu = document.getElementById('namaPemandu');
-const lokasi = document.getElementById('lokasi');
-const tujuan = document.getElementById('tujuan');
-const bacaanOdo = document.getElementById('bacaanOdo');
-const noProjektor = document.getElementById('noProjektor');
-const jenisSelect = document.getElementById('jenisSelect');
-const namaInput = document.getElementById('namaInput');
-const jabatan = document.getElementById('jabatan');
-const timestamp = document.getElementById('timestamp');
-const submitBtn = document.getElementById('submitBtn');
-const jenisLabel = document.getElementById('jenisLabel');
-
-// Permohonan Kenderaan fields
+// ── Field refs ──────────────────────────────────────────────────────
+const item             = document.getElementById('item');
+const kuantiti         = document.getElementById('kuantiti');
+const jenisKenderaan   = document.getElementById('jenisKenderaan');
+const masa             = document.getElementById('masa');
+const namaPemandu      = document.getElementById('namaPemandu');
+const lokasi           = document.getElementById('lokasi');
+const tujuan           = document.getElementById('tujuan');
+const bacaanOdo        = document.getElementById('bacaanOdo');
+const noProjektor      = document.getElementById('noProjektor');
+const jenisSelect      = document.getElementById('jenisSelect');
+const namaInput        = document.getElementById('namaInput');
+const jabatan          = document.getElementById('jabatan');
+const timestamp        = document.getElementById('timestamp');
+const submitBtn        = document.getElementById('submitBtn');
+const jenisLabel       = document.getElementById('jenisLabel');
 const pgJenisKenderaan = document.getElementById('pgJenisKenderaan');
-const pgNamaPemandu = document.getElementById('pgNamaPemandu');
-const pgLokasi = document.getElementById('pgLokasi');
-const pgTujuan = document.getElementById('pgTujuan');
-const pgTarikh = document.getElementById('pgTarikh');
-const pgMasa = document.getElementById('pgMasa');
+const pgNamaPemandu    = document.getElementById('pgNamaPemandu');
+const pgLokasi         = document.getElementById('pgLokasi');
+const pgTujuan         = document.getElementById('pgTujuan');
+const pgTarikh         = document.getElementById('pgTarikh');
+const pgMasa           = document.getElementById('pgMasa');
 
-// Label wrappers - we inject labels dynamically
-function addLabelBefore(el, text) {
-  if (!el._label) {
-    const lbl = document.createElement('label');
-    lbl.textContent = text;
-    lbl._forField = el.id;
-    el.parentNode.insertBefore(lbl, el);
-    el._label = lbl;
-  }
-}
-
+// ── Show/hide fields ────────────────────────────────────────────────
 function updateFieldsByJenis(jenis){
   const allFields = [
     item, kuantiti,
@@ -264,17 +254,15 @@ function updateFieldsByJenis(jenis){
     noProjektor
   ];
   allFields.forEach(f => { f.classList.add('hidden'); f.value = ''; });
-
-  // Hide injected labels too
   document.querySelectorAll('label[data-dynamic]').forEach(l => l.remove());
 
   if(jenis === 'alat_tulis'){
-    item.placeholder = 'Jenis Alat';
     item.classList.remove('hidden');
     kuantiti.classList.remove('hidden');
   }
 
   if(jenis === 'kenderaan'){
+    // Kenderaan Penggunaan — ada odometer + masa teks bebas
     jenisKenderaan.classList.remove('hidden');
     masa.classList.remove('hidden');
     namaPemandu.classList.remove('hidden');
@@ -284,7 +272,7 @@ function updateFieldsByJenis(jenis){
   }
 
   if(jenis === 'permohonan_kenderaan'){
-    // Inject labels for date/time
+    // Permohonan Kenderaan — tarikh+masa manual, TIADA odometer
     injectLabel(pgJenisKenderaan, 'Jenis Kenderaan');
     pgJenisKenderaan.classList.remove('hidden');
 
@@ -309,109 +297,117 @@ function updateFieldsByJenis(jenis){
   }
 }
 
-function injectLabel(el, text) {
+function injectLabel(el, text){
   const lbl = document.createElement('label');
   lbl.textContent = text;
   lbl.setAttribute('data-dynamic', '1');
   el.parentNode.insertBefore(lbl, el);
 }
 
-jenisSelect.addEventListener('change', function(){
-  updateFieldsByJenis(this.value);
-});
+jenisSelect.addEventListener('change', function(){ updateFieldsByJenis(this.value); });
 
-// --- Form submit ---
-document.getElementById('assetForm').addEventListener('submit', async e=>{
+// ── Submit ──────────────────────────────────────────────────────────
+document.getElementById('assetForm').addEventListener('submit', async e => {
   e.preventDefault();
   const jenis = jenisSelect.value;
-  if(!jenis) return showMessage('Sila pilih jenis aset','warning');
+  if(!jenis) return showMessage('Sila pilih jenis aset', 'warning');
+
   submitBtn.disabled = true;
-  timestamp.value = new Date().toLocaleString('ms-MY');
+  timestamp.value    = new Date().toLocaleString('ms-MY');
 
   let data = {
-    nama: namaInput.value,
-    jabatan: jabatan.value,
+    nama:      namaInput.value,
+    jabatan:   jabatan.value,
     timestamp: timestamp.value
   };
 
   if(jenis === 'alat_tulis'){
-    data.jenis_alatan = item.value || '-';
-    data.kuantiti = kuantiti.value || '-';
+    data.jenis_alatan = item.value     || '-';
+    data.kuantiti     = kuantiti.value || '-';
+
   } else if(jenis === 'kenderaan'){
-    data.jenis_kenderaan = jenisKenderaan.value || '-';
-    data.masa = masa.value || '-';
-    data.nama_pemandu = namaPemandu.value || '-';
-    data.lokasi = lokasi.value || '-';
-    data.tujuan = tujuan.value || '-';
-    data.bacaan_odometer = bacaanOdo.value || '-';
+    data.jenis_kenderaan  = jenisKenderaan.value || '-';
+    data.masa             = masa.value           || '-';
+    data.nama_pemandu     = namaPemandu.value    || '-';
+    data.lokasi           = lokasi.value         || '-';
+    data.tujuan           = tujuan.value         || '-';
+    data.bacaan_odometer  = bacaanOdo.value      || '-';
+
   } else if(jenis === 'permohonan_kenderaan'){
-    data.jenis_kenderaan = pgJenisKenderaan.value || '-';
-    data.nama_pemandu = pgNamaPemandu.value || '-';
-    data.lokasi = pgLokasi.value || '-';
-    data.tujuan = pgTujuan.value || '-';
-    data.tarikh = pgTarikh.value || '-';
-    data.masa = pgMasa.value || '-';
+    // ✅ TIADA bacaan_odometer
+    data.jenis_kenderaan  = pgJenisKenderaan.value || '-';
+    data.nama_pemandu     = pgNamaPemandu.value    || '-';
+    data.lokasi           = pgLokasi.value         || '-';
+    data.tujuan           = pgTujuan.value         || '-';
+    data.tarikh           = pgTarikh.value         || '-';
+    data.masa             = pgMasa.value           || '-';
     data.jenis_permohonan = 'PermohonanKenderaan2026';
+
   } else if(jenis === 'projektor'){
     data.no_projektor = noProjektor.value || '-';
   }
 
-  const res = await fetch(POST_API[jenis], {
-    method:'POST',
-    headers:{'Content-Type':'application/x-www-form-urlencoded'},
-    body:new URLSearchParams({data: JSON.stringify(data)})
-  });
-  const r = await res.json();
-  r.status==='success'
-    ? showMessage('✓ Permohonan berjaya','success')
-    : showMessage('✗ Gagal hantar','error');
+  try {
+    const res = await fetch(POST_API[jenis], {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body:    new URLSearchParams({ data: JSON.stringify(data) })
+    });
+    const r = await res.json();
+    r.status === 'success'
+      ? showMessage('✓ Permohonan berjaya dihantar', 'success')
+      : showMessage('✗ Gagal hantar. Sila cuba lagi.', 'error');
+  } catch(err){
+    showMessage('✗ Ralat sambungan. Sila cuba lagi.', 'error');
+  }
+
   submitBtn.disabled = false;
   e.target.reset();
   updateFieldsByJenis('');
 });
 
-function showMessage(msg,type){
-  const el=document.getElementById('message');
-  el.textContent=msg;
-  el.className=`message ${type}`;
-  el.style.display='block';
-  if(type==='success') setTimeout(()=>el.style.display='none',5000);
+function showMessage(msg, type){
+  const el         = document.getElementById('message');
+  el.textContent   = msg;
+  el.className     = `message ${type}`;
+  el.style.display = 'block';
+  if(type === 'success') setTimeout(() => el.style.display = 'none', 5000);
 }
 
-document.addEventListener('DOMContentLoaded', async ()=>{
+// ── Init ────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
   await loadNames();
   setupAutocomplete();
 
-  const params = new URLSearchParams(window.location.search);
-  let jenisParam = params.get('jenis');
+  const params     = new URLSearchParams(window.location.search);
+  const jenisParam = params.get('jenis');
 
-  let mappedJenis = '';
-  if(jenisParam === 'AlatTulis' || jenisParam === 'AlatTulis2026'){
-    mappedJenis = 'alat_tulis';
-  } else if(jenisParam === 'Kenderaan' || jenisParam === 'Kenderaan2026'){
-    mappedJenis = 'kenderaan';
-  } else if(jenisParam === 'PermohonanKenderaan' || jenisParam === 'PermohonanKenderaan2026'){
-    mappedJenis = 'permohonan_kenderaan';
-  } else if(jenisParam === 'Projektor' || jenisParam === 'Projektor2026'){
-    mappedJenis = 'projektor';
-  }
+  // Peta semua nilai ?jenis= yang mungkin → nilai option <select>
+  const jenisMap = {
+    'AlatTulis':               'alat_tulis',
+    'AlatTulis2026':           'alat_tulis',
+    'Kenderaan':               'kenderaan',
+    'Kenderaan2026':           'kenderaan',
+    'PermohonanKenderaan':     'permohonan_kenderaan',
+    'PermohonanKenderaan2026': 'permohonan_kenderaan',
+    'Projektor':               'projektor',
+    'Projektor2026':           'projektor',
+  };
+
+  const mappedJenis = jenisParam ? (jenisMap[jenisParam] || '') : '';
 
   if(mappedJenis){
-    jenisSelect.value = mappedJenis;
+    jenisSelect.value                = mappedJenis;
     updateFieldsByJenis(mappedJenis);
-    jenisSelect.disabled = true;
-    jenisSelect.style.pointerEvents = 'none';
-    jenisSelect.style.opacity = '0.6';
+    jenisSelect.disabled             = true;
+    jenisSelect.style.pointerEvents  = 'none';
+    jenisSelect.style.opacity        = '0.6';
     jenisSelect.style.backgroundColor = '#e5e7eb';
-    jenisLabel.textContent = "Jenis Aset: " + jenisParam;
-    jenisLabel.style.color = '#059669';
+    jenisLabel.textContent           = 'Jenis Aset: ' + jenisParam;
+    jenisLabel.style.color           = '#059669';
   }
 });
 </script>
 
 </body>
 </html>
-
-
-
-
