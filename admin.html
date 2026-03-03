@@ -269,14 +269,18 @@ function getVal(obj, ...keys) {
 }
 
 // EXTRACT ITEMS LOGIC
-function extractItems(d){
- // Special Logic for PermohonanKenderaan2026
- if(d.JenisPermohonan === 'PermohonanKenderaan2026'){
-  const jk = getVal(d, 'JenisKenderaan', 'Kenderaan', 'Jenis_kenderaan') || '-';
-  const loc = getVal(d, 'Lokasi', 'Destinasi', 'Tempat') || '-';
-  const pem = getVal(d, 'NamaPemandu', 'Pemandu', 'Nama_pemandu') || 'Tiada';
-  const tuj = getVal(d, 'Tujuan', 'Sebab', 'Keperluan') || '-';
-  return `🚗 <b>${jk}</b><br>📍 ${loc}<br>👤 ${pem}<br>📋 ${tuj}`;
+function extractItems(d, forExport=false){
+ if(d.JenisPermohonan==='PermohonanKenderaan2026'){
+  const parts=[];
+  const jenisKen   =getField(d,'JenisKenderaan','Jenis_kenderaan','jenis_kenderaan','jenis kenderaan','Kenderaan');
+  const namaPemandu=getField(d,'NamaPemandu','Nama_pemandu','nama_pemandu','nama pemandu','Pemandu');
+  const lokasi     =getField(d,'Lokasi','lokasi','Destinasi','destinasi','Tempat');
+  const tujuan     =getField(d,'Tujuan','tujuan','Sebab','Keperluan');
+  const tarikhRaw  =getField(d,'Tarikh','tarikh','TarikhPerjalanan','tarikh_perjalanan','TarikhPenggunaan');
+  const masaRaw    =getField(d,'Masa','masa','MasaPerjalanan','masa_perjalanan','Waktu','MasaBerangkat');
+
+  const tarikhFmt=formatTarikh(tarikhRaw);
+  const masaFmt  =formatMasa(masaRaw);
  }
 
  // Logic for other types
@@ -372,3 +376,4 @@ document.addEventListener('DOMContentLoaded', generateQR);
 </script>
 </body>
 </html>
+
