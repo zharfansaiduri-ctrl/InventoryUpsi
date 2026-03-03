@@ -269,15 +269,15 @@ function formatDateTime(iso){
 function extractItems(d){
  if(d.JenisPermohonan === 'PermohonanKenderaan2026'){
   const parts = [];
-  if(d.jenis_kenderaan && d.jenis_kenderaan !== '-') parts.push('Kenderaan: ' + d.Jenis_kenderaan);
-  if(d.nama_pemandu    && d.nama_pemandu    !== '-') parts.push('Pemandu: '   + d.Nama_pemandu);
-  if(d.lokasi          && d.lokasi          !== '-') parts.push('Lokasi: '    + d.Lokasi);
-  if(d.tujuan          && d.tujuan          !== '-') parts.push('Tujuan: '    + d.Tujuan);
-  if(d.tarikh          && d.tarikh          !== '-') parts.push('Tarikh: '    + d.Tarikh);
-  if(d.masa            && d.masa            !== '-') parts.push('Masa: '      + d.Masa);
+  if(d.JenisKenderaan && d.JenisKenderaan !== '-') parts.push('Kenderaan: ' + d.JenisKenderaan);
+  if(d.NamaPemandu    && d.NamaPemandu    !== '-') parts.push('Pemandu: '   + d.NamaPemandu);
+  if(d.Lokasi         && d.Lokasi         !== '-') parts.push('Lokasi: '    + d.Lokasi);
+  if(d.Tujuan         && d.Tujuan         !== '-') parts.push('Tujuan: '    + d.Tujuan);
+  if(d.Tarikh         && d.Tarikh         !== '-') parts.push('Tarikh: '    + d.Tarikh);
+  if(d.Masa           && d.Masa           !== '-') parts.push('Masa: '      + d.Masa);
   return parts.length ? parts.join(' | ') : '-';
  }
-
+ 
  const items = [];
  const possibleFields = [
   'Item','ItemDiminta','Perkara','Barang',
@@ -378,6 +378,7 @@ document.addEventListener('DOMContentLoaded', generateQR);
 
 </body>
 </html>
+
 
 
 
