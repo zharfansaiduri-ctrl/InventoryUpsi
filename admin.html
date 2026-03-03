@@ -62,12 +62,19 @@ body{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;p
  text-align:center;
  box-shadow:0 10px 25px rgba(0,0,0,.2);
 }
-.qr-card h3{color:var(--bg1);}
+.qr-card h3{color:var(--bg1);margin-bottom:8px;}
+.qr-url{
+ font-size:10px;
+ color:#888;
+ word-break:break-all;
+ margin-bottom:4px;
+ line-height:1.4;
+}
 .qr-box{
  background:white;
  padding:15px;
  border-radius:12px;
- margin:15px auto;
+ margin:12px auto;
  display:flex;
  justify-content:center;
 }
@@ -94,17 +101,6 @@ th{background:var(--bg1);color:white;}
 .card h2{color:var(--bg1);}
 
 .item-list{font-size:13px;max-width:300px;}
-.item-badge{
- display:inline-block;
- background:#e0f2fe;
- color:#0369a1;
- padding:3px 8px;
- margin:2px;
- border-radius:4px;
- font-size:12px;
-}
-
-/* Badge warna khas untuk Penggunaan Kenderaan */
 .badge-pg{
  background:#fef3c7;
  color:#92400e;
@@ -194,201 +190,203 @@ th{background:var(--bg1);color:white;}
 
 <script>
 // SECURITY
-if(sessionStorage.getItem('isLoggedIn')!=='true')location.href='adminlogin.html';
-function logout(){sessionStorage.clear();location.href='adminlogin.html';}
+if(sessionStorage.getItem('isLoggedIn')!=='true') location.href='adminlogin.html';
+function logout(){ sessionStorage.clear(); location.href='adminlogin.html'; }
 
-const FORM_URLS=[
- {label:"AlatTulis2026",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=AlatTulis2026"},
- {label:"Kenderaan2026",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi?jenis=Kenderaan2026"},
- {label:"PermohonanKenderaan2026",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=PenggunaanKenderaan2026"},
- {label:"Projektor2026",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=Projektor2026"}
+// ✅ SEMUA 4 QR URL BETUL — pakai ?jenis= yang konsisten dengan jenisMap dalam index.html
+const FORM_URLS = [
+ {
+  label: "AlatTulis2026",
+  url:   "https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=AlatTulis2026"
+ },
+ {
+  label: "Kenderaan2026",
+  url:   "https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=Kenderaan2026"
+ },
+ {
+  label: "PermohonanKenderaan2026",
+  url:   "https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=PermohonanKenderaan2026"
+ },
+ {
+  label: "Projektor2026",
+  url:   "https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=Projektor2026"
+ }
 ];
 
-const SCRIPT_URLS=[
- {label:"AlatTulis2026",url:"https://script.google.com/macros/s/AKfycbyXUmQO6701Tv7f7vl7xuFcVgdvw0vKUSUiCjNiTx_blv2XPaYL1dPenP09ulcwc6Ug6w/exec"},
- {label:"Kenderaan2026",url:"https://script.google.com/macros/s/AKfycby0eimKxmekifIZFVHw4HnQCaIVmpXQiYJ27usQpNv7v1kCVanOyqo1X-d-N4msUKnq/exec"},
- {label:"PermohonanKenderaan2026",url:"https://script.google.com/macros/s/AKfycbzguF6dzrjDjew0liRXVpWaxZEqKCPjgtjDuuAIEjglNLgREmyvolt7JpYU7AfEx5TX/exec"}, 
- {label:"Projektor2026",url:"https://script.google.com/macros/s/AKfycbwp9cqsZMSqcRrB04SQLWtkR0ryjATCw113ES2cogQ3A1jlD8XOLyJ0hQ1hNJCmTknf/exec"}
+const SCRIPT_URLS = [
+ {label:"AlatTulis2026",          url:"https://script.google.com/macros/s/AKfycbyXUmQO6701Tv7f7vl7xuFcVgdvw0vKUSUiCjNiTx_blv2XPaYL1dPenP09ulcwc6Ug6w/exec"},
+ {label:"Kenderaan2026",          url:"https://script.google.com/macros/s/AKfycby0eimKxmekifIZFVHw4HnQCaIVmpXQiYJ27usQpNv7v1kCVanOyqo1X-d-N4msUKnq/exec"},
+ {label:"PermohonanKenderaan2026",url:"https://script.google.com/macros/s/AKfycbzguF6dzrjDjew0liRXVpWaxZEqKCPjgtjDuuAIEjglNLgREmyvolt7JpYU7AfEx5TX/exec"},
+ {label:"Projektor2026",          url:"https://script.google.com/macros/s/AKfycbwp9cqsZMSqcRrB04SQLWtkR0ryjATCw113ES2cogQ3A1jlD8XOLyJ0hQ1hNJCmTknf/exec"}
 ];
 
-// TAB
+// ── Tab navigation ─────────────────────────────────────────────────
 function tab(x){
- document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
- document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+ document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+ document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
  document.querySelector(`[onclick="tab('${x}')"]`).classList.add('active');
  document.getElementById(x).classList.add('active');
- if(x==='qr')generateQR();
- if(x==='data')loadData();
- if(x==='dash')updateDash();
+ if(x === 'qr')   generateQR();
+ if(x === 'data') loadData();
+ if(x === 'dash') updateDash();
 }
 
-/* QR */
+// ── QR Generation ──────────────────────────────────────────────────
 function generateQR(){
  const qrGrid = document.getElementById('qrGrid');
  qrGrid.innerHTML = '';
 
- FORM_URLS.forEach((f,i)=>{
-  const card=document.createElement('div');
-  card.className='qr-card';
+ FORM_URLS.forEach((f, i) => {
+  const card = document.createElement('div');
+  card.className = 'qr-card';
 
-  // Warna badge khas untuk Penggunaan Kenderaan
   const badge = f.label === 'PermohonanKenderaan2026'
-    ? `<span class="badge-pg">Permohonan Sahaja</span><br><br>`
-    : '';
+   ? `<span class="badge-pg">Permohonan Sahaja</span><br>`
+   : '';
 
-  card.innerHTML=`
+  card.innerHTML = `
    <h3>QR ${f.label}</h3>
    ${badge}
+   <p class="qr-url">${f.url}</p>
    <div class="qr-box"><div id="qr_${i}"></div></div>
-   <button class="btn" onclick="downloadQR('qr_${i}','QR_${f.label}')">
-    Muat Turun
-   </button>
+   <button class="btn" onclick="downloadQR('qr_${i}','QR_${f.label}')">Muat Turun</button>
   `;
   qrGrid.appendChild(card);
 
-  setTimeout(()=>{
-   new QRCode(document.getElementById(`qr_${i}`),{
-    text:f.url,width:200,height:200
+  setTimeout(() => {
+   new QRCode(document.getElementById(`qr_${i}`), {
+    text: f.url, width: 200, height: 200
    });
-  },100);
+  }, 100);
  });
 }
 
-function downloadQR(id,name){
- const c=document.querySelector(`#${id} canvas`);
- const a=document.createElement('a');
- a.href=c.toDataURL();a.download=name+'.png';a.click();
+function downloadQR(id, name){
+ const c = document.querySelector(`#${id} canvas`);
+ const a = document.createElement('a');
+ a.href = c.toDataURL(); a.download = name + '.png'; a.click();
 }
 
-/* DATA & DASHBOARD */
-let all=[],filtered=[];
+// ── Data & Dashboard ───────────────────────────────────────────────
+let all = [], filtered = [];
 
 function formatDateTime(iso){
  if(!iso) return '-';
  const d = new Date(iso);
- if(isNaN(d)) return iso; // kalau bukan ISO, return as-is
- const day = String(d.getDate()).padStart(2,'0');
- const month = String(d.getMonth()+1).padStart(2,'0');
- const year = d.getFullYear();
- const hours = String(d.getHours()).padStart(2,'0');
- const minutes = String(d.getMinutes()).padStart(2,'0');
- const seconds = String(d.getSeconds()).padStart(2,'0');
- return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+ if(isNaN(d)) return iso;
+ const pad = n => String(n).padStart(2,'0');
+ return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
 function extractItems(d){
- // Penggunaan Kenderaan - tunjuk tarikh+masa dalam item column
  if(d.JenisPermohonan === 'PermohonanKenderaan2026'){
   const parts = [];
-  if(d.jenis_kenderaan && d.jenis_kenderaan !== '-') parts.push('Kenderaan: '+d.jenis_kenderaan);
-  if(d.nama_pemandu && d.nama_pemandu !== '-') parts.push('Pemandu: '+d.nama_pemandu);
-  if(d.lokasi && d.lokasi !== '-') parts.push('Lokasi: '+d.lokasi);
-  if(d.tujuan && d.tujuan !== '-') parts.push('Tujuan: '+d.tujuan);
-  if(d.tarikh && d.tarikh !== '-') parts.push('Tarikh: '+d.tarikh);
-  if(d.masa && d.masa !== '-') parts.push('Masa: '+d.masa);
+  if(d.jenis_kenderaan && d.jenis_kenderaan !== '-') parts.push('Kenderaan: ' + d.jenis_kenderaan);
+  if(d.nama_pemandu    && d.nama_pemandu    !== '-') parts.push('Pemandu: '   + d.nama_pemandu);
+  if(d.lokasi          && d.lokasi          !== '-') parts.push('Lokasi: '    + d.lokasi);
+  if(d.tujuan          && d.tujuan          !== '-') parts.push('Tujuan: '    + d.tujuan);
+  if(d.tarikh          && d.tarikh          !== '-') parts.push('Tarikh: '    + d.tarikh);
+  if(d.masa            && d.masa            !== '-') parts.push('Masa: '      + d.masa);
   return parts.length ? parts.join(' | ') : '-';
  }
 
  const items = [];
  const possibleFields = [
-  'Item', 'ItemDiminta', 'Perkara', 'Barang',
-  'JenisBarang', 'NamaBarang', 'NamaItem',
-  'Pen', 'Pensil', 'Kertas', 'Buku',
-  'JenisKenderaan', 'ModelKenderaan',
-  'ModelProjektor', 'JenisProjektor'
+  'Item','ItemDiminta','Perkara','Barang',
+  'JenisBarang','NamaBarang','NamaItem',
+  'Pen','Pensil','Kertas','Buku',
+  'JenisKenderaan','ModelKenderaan',
+  'ModelProjektor','JenisProjektor'
  ];
-
  for(const field of possibleFields){
   if(d[field] && d[field] !== '' && d[field] !== '-') items.push(d[field]);
  }
-
  if(items.length === 0){
-  const standardFields = ['Timestamp','Nama','Jabatan','JenisPermohonan','Email','NoTelefon'];
+  const skip = ['Timestamp','Nama','Jabatan','JenisPermohonan','Email','NoTelefon'];
   for(const key in d){
-   if(!standardFields.includes(key) && d[key] && d[key] !== '' && d[key] !== '-'){
+   if(!skip.includes(key) && d[key] && d[key] !== '' && d[key] !== '-')
     items.push(`${key}: ${d[key]}`);
-   }
   }
  }
-
- return items.length > 0 ? items.join(', ') : '-';
+ return items.length ? items.join(', ') : '-';
 }
 
 async function loadData(){
- all=[];
- const tableData = document.getElementById('tableData');
- tableData.innerHTML='<tr><td colspan="6" class="loading">Loading...</td></tr>';
+ all = [];
+ document.getElementById('tableData').innerHTML =
+  '<tr><td colspan="6" class="loading">Loading...</td></tr>';
  for(const s of SCRIPT_URLS){
-  if(s.url.includes('TUKAR_KE_URL')) continue; // skip kalau URL belum ditukar
   try{
-   const r=await fetch(s.url);const d=await r.json();
-   const rows=Array.isArray(d)?d:Object.values(d).flat();
-   rows.forEach(x=>x.JenisPermohonan=s.label);
-   all=all.concat(rows);
-  }catch(e){console.warn('Gagal load:',s.label);}
+   const r = await fetch(s.url);
+   const d = await r.json();
+   const rows = Array.isArray(d) ? d : Object.values(d).flat();
+   rows.forEach(x => x.JenisPermohonan = s.label);
+   all = all.concat(rows);
+  } catch(e){ console.warn('Gagal load:', s.label); }
  }
  filterData();
 }
 
 function filterData(){
- const j=document.getElementById('fJenis').value;
- const b=document.getElementById('fBulan').value;
- const q=document.getElementById('search').value.toLowerCase();
- filtered=all.filter(d=>{
-  const bulanData = d.Timestamp ? String(new Date(d.Timestamp).getMonth()+1).padStart(2,'0') : '';
+ const j = document.getElementById('fJenis').value;
+ const b = document.getElementById('fBulan').value;
+ const q = document.getElementById('search').value.toLowerCase();
+ filtered = all.filter(d => {
+  const bulan = d.Timestamp
+   ? String(new Date(d.Timestamp).getMonth()+1).padStart(2,'0') : '';
   const items = extractItems(d).toLowerCase();
-  return (j==='all'||d.JenisPermohonan===j) &&
-   (b==='all'||bulanData===b) &&
-   ((d.Nama||'').toLowerCase().includes(q)||
-    (d.Jabatan||'').toLowerCase().includes(q)||
+  return (j === 'all' || d.JenisPermohonan === j) &&
+   (b === 'all' || bulan === b) &&
+   ((d.Nama    || '').toLowerCase().includes(q) ||
+    (d.Jabatan || '').toLowerCase().includes(q) ||
     items.includes(q));
  });
- render();updateDash();
+ render(); updateDash();
 }
 
 function render(){
- const tableData = document.getElementById('tableData');
+ const tbody = document.getElementById('tableData');
  if(!filtered.length){
-  tableData.innerHTML='<tr><td colspan="6" class="loading">Tiada Data</td></tr>';return;
+  tbody.innerHTML = '<tr><td colspan="6" class="loading">Tiada Data</td></tr>';
+  return;
  }
- tableData.innerHTML=filtered.map((d,i)=>`
- <tr>
-  <td>${i+1}</td>
-  <td>${d.JenisPermohonan==='PermohonanKenderaan2026'
-    ? '<span class="badge-pg">'+d.JenisPermohonan+'</span>'
+ tbody.innerHTML = filtered.map((d, i) => `
+  <tr>
+   <td>${i+1}</td>
+   <td>${d.JenisPermohonan === 'PermohonanKenderaan2026'
+    ? '<span class="badge-pg">' + d.JenisPermohonan + '</span>'
     : d.JenisPermohonan}</td>
-  <td>${d.Nama||'-'}</td>
-  <td>${d.Jabatan||'-'}</td>
-  <td class="item-list">${extractItems(d)}</td>
-  <td>${formatDateTime(d.Timestamp)}</td>
- </tr>`).join('');
+   <td>${d.Nama    || '-'}</td>
+   <td>${d.Jabatan || '-'}</td>
+   <td class="item-list">${extractItems(d)}</td>
+   <td>${formatDateTime(d.Timestamp)}</td>
+  </tr>`).join('');
 }
 
 function exportExcel(){
- if(!filtered.length)return alert('Tiada data');
- const ws=XLSX.utils.json_to_sheet(filtered.map(d=>({
+ if(!filtered.length) return alert('Tiada data');
+ const ws = XLSX.utils.json_to_sheet(filtered.map(d => ({
   JenisPermohonan: d.JenisPermohonan,
-  Nama: d.Nama || '-',
-  Jabatan: d.Jabatan || '-',
-  ItemDiminta: extractItems(d),
-  Timestamp: formatDateTime(d.Timestamp)
+  Nama:            d.Nama    || '-',
+  Jabatan:         d.Jabatan || '-',
+  ItemDiminta:     extractItems(d),
+  Timestamp:       formatDateTime(d.Timestamp)
  })));
- const wb=XLSX.utils.book_new();
- XLSX.utils.book_append_sheet(wb,ws,'Permohonan');
- XLSX.writeFile(wb,'Permohonan.xlsx');
+ const wb = XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb, ws, 'Permohonan');
+ XLSX.writeFile(wb, 'Permohonan.xlsx');
 }
 
 function updateDash(){
- document.getElementById('total').innerText=filtered.length;
- document.getElementById('alat').innerText=filtered.filter(x=>x.JenisPermohonan==='AlatTulis2026').length;
- document.getElementById('ken').innerText=filtered.filter(x=>x.JenisPermohonan==='Kenderaan2026').length;
- document.getElementById('pgken').innerText=filtered.filter(x=>x.JenisPermohonan==='PermohonanKenderaan2026').length;
- document.getElementById('pro').innerText=filtered.filter(x=>x.JenisPermohonan==='Projektor2026').length;
+ document.getElementById('total').innerText  = filtered.length;
+ document.getElementById('alat').innerText   = filtered.filter(x => x.JenisPermohonan === 'AlatTulis2026').length;
+ document.getElementById('ken').innerText    = filtered.filter(x => x.JenisPermohonan === 'Kenderaan2026').length;
+ document.getElementById('pgken').innerText  = filtered.filter(x => x.JenisPermohonan === 'PermohonanKenderaan2026').length;
+ document.getElementById('pro').innerText    = filtered.filter(x => x.JenisPermohonan === 'Projektor2026').length;
 }
 
-document.addEventListener('DOMContentLoaded',generateQR);
+document.addEventListener('DOMContentLoaded', generateQR);
 </script>
 
 </body>
 </html>
-
