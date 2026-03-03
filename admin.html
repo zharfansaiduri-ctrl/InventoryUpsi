@@ -160,15 +160,7 @@ th{background:var(--bg1);color:white;}
 
 <!-- QR -->
 <div id="qr" class="content active">
-
- <!-- Borang Biasa -->
- <div class="qr-section-title">📋 Borang Permohonan Biasa</div>
- <div class="qr-grid" id="qrGridBiasa"></div>
-
- <!-- Penggunaan Kenderaan - Diasingkan -->
- <div class="qr-section-title pg-title">🚗 Penggunaan Kenderaan (Sahaja)</div>
- <div class="qr-grid" id="qrGridPG"></div>
-
+ <div class="qr-grid" id="qrGrid"></div>
 </div>
 
 <!-- DATA -->
@@ -231,16 +223,11 @@ th{background:var(--bg1);color:white;}
 if(sessionStorage.getItem('isLoggedIn')!=='true')location.href='adminlogin.html';
 function logout(){sessionStorage.clear();location.href='adminlogin.html';}
 
-// Borang Biasa (bukan Penggunaan Kenderaan)
-const FORM_URLS_BIASA=[
+const FORM_URLS=[
  {label:"AlatTulis2026",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=AlatTulis2026"},
  {label:"Kenderaan2026",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi?jenis=Kenderaan2026"},
+ {label:"PenggunaanKenderaan2026",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=PenggunaanKenderaan2026"},
  {label:"Projektor2026",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=Projektor2026"}
-];
-
-// Penggunaan Kenderaan - diasingkan
-const FORM_URLS_PG=[
- {label:"PenggunaanKenderaan2026",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=PenggunaanKenderaan2026"}
 ];
 
 const SCRIPT_URLS=[
@@ -262,43 +249,31 @@ function tab(x){
 }
 
 /* QR */
-let qrGenerated = false;
 function generateQR(){
- if(qrGenerated) return;
- qrGenerated = true;
+ const qrGrid = document.getElementById('qrGrid');
+ qrGrid.innerHTML = '';
 
- // Borang Biasa
- const gridBiasa = document.getElementById('qrGridBiasa');
- gridBiasa.innerHTML = '';
- FORM_URLS_BIASA.forEach((f,i)=>{
+ FORM_URLS.forEach((f,i)=>{
   const card=document.createElement('div');
   card.className='qr-card';
+
+  const badge = f.label === 'PenggunaanKenderaan2026'
+    ;
+
   card.innerHTML=`
    <h3>QR ${f.label}</h3>
-   <div class="qr-box"><div id="qrB_${i}"></div></div>
-   <button class="btn" onclick="downloadQR('qrB_${i}','QR_${f.label}')">Muat Turun</button>
+   ${badge}
+   <div class="qr-box"><div id="qr_${i}"></div></div>
+   <button class="btn" onclick="downloadQR('qr_${i}','QR_${f.label}')">
+    Muat Turun
+   </button>
   `;
-  gridBiasa.appendChild(card);
-  setTimeout(()=>{
-   new QRCode(document.getElementById(`qrB_${i}`),{text:f.url,width:200,height:200});
-  },100);
- });
+  qrGrid.appendChild(card);
 
- // Penggunaan Kenderaan - diasingkan
- const gridPG = document.getElementById('qrGridPG');
- gridPG.innerHTML = '';
- FORM_URLS_PG.forEach((f,i)=>{
-  const card=document.createElement('div');
-  card.className='qr-card pg-card';
-  card.innerHTML=`
-   <h3>🚗 QR ${f.label}</h3>
-   <p style="color:#c2410c;font-size:13px;margin-bottom:8px;">Borang Penggunaan Sahaja</p>
-   <div class="qr-box"><div id="qrPG_${i}"></div></div>
-   <button class="btn btn-pg" onclick="downloadQR('qrPG_${i}','QR_${f.label}')">Muat Turun</button>
-  `;
-  gridPG.appendChild(card);
   setTimeout(()=>{
-   new QRCode(document.getElementById(`qrPG_${i}`),{text:f.url,width:200,height:200});
+   new QRCode(document.getElementById(`qr_${i}`),{
+    text:f.url,width:200,height:200
+   });
   },100);
  });
 }
@@ -328,16 +303,17 @@ function formatDateTime(iso){
 /* Format masa mentah (string masa) kepada 24jam */
 function formatMasa24(masaStr){
  if(!masaStr || masaStr==='-') return masaStr || '-';
- // Cuba parse kalau ada ISO/timestamp penuh
- const d = new Date(masaStr);
- if(!isNaN(d)){
-  const hh = String(d.getHours()).padStart(2,'0');
-  const mm = String(d.getMinutes()).padStart(2,'0');
-  return `${hh}:${mm}`;
+
+ // Cuba extract masa dari ISO string (T##:##:##)
+ const isoMatch = masaStr.match(/T(\d{2}):(\d{2}):(\d{2})/);
+ if(isoMatch){
+  return `${isoMatch[1]}:${isoMatch[2]}`;
  }
+
  // Kalau format HH:MM atau HH:MM:SS terus
  const match = masaStr.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
  if(match) return `${String(match[1]).padStart(2,'0')}:${match[2]}`;
+
  return masaStr;
 }
 
