@@ -16,6 +16,8 @@
  --card:#F4F6F8;
  --accent:#12D8FA;
  --muted:#6B7280;
+ --orange:#f97316;
+ --orange-light:#fff7ed;
 }
 *{box-sizing:border-box;margin:0;padding:0;font-family:'League Spartan',sans-serif;}
 body{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;padding:20px;}
@@ -50,6 +52,22 @@ body{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;p
 .content{display:none;}
 .content.active{display:block;}
 
+/* QR SECTIONS */
+.qr-section-title{
+ color:white;
+ font-size:18px;
+ font-weight:700;
+ margin:25px 0 12px;
+ padding:10px 16px;
+ background:rgba(255,255,255,0.15);
+ border-radius:10px;
+ border-left:4px solid var(--accent);
+}
+.qr-section-title.pg-title{
+ border-left:4px solid var(--orange);
+ background:rgba(249,115,22,0.15);
+}
+
 .qr-grid{
  display:grid;
  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
@@ -62,7 +80,12 @@ body{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;p
  text-align:center;
  box-shadow:0 10px 25px rgba(0,0,0,.2);
 }
+.qr-card.pg-card{
+ border:2px solid var(--orange);
+ background:linear-gradient(135deg,#fff7ed,#fff);
+}
 .qr-card h3{color:var(--bg1);}
+.qr-card.pg-card h3{color:#c2410c;}
 .qr-box{
  background:white;
  padding:15px;
@@ -79,6 +102,9 @@ body{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;p
  border-radius:10px;
  font-weight:600;
  cursor:pointer;
+}
+.btn-pg{
+ background:linear-gradient(135deg,var(--orange),#fb923c);
 }
 
 /* data + dashboard */
@@ -134,7 +160,15 @@ th{background:var(--bg1);color:white;}
 
 <!-- QR -->
 <div id="qr" class="content active">
- <div class="qr-grid" id="qrGrid"></div>
+
+ <!-- Borang Biasa -->
+ <div class="qr-section-title">📋 Borang Permohonan Biasa</div>
+ <div class="qr-grid" id="qrGridBiasa"></div>
+
+ <!-- Penggunaan Kenderaan - Diasingkan -->
+ <div class="qr-section-title pg-title">🚗 Penggunaan Kenderaan (Sahaja)</div>
+ <div class="qr-grid" id="qrGridPG"></div>
+
 </div>
 
 <!-- DATA -->
@@ -197,11 +231,16 @@ th{background:var(--bg1);color:white;}
 if(sessionStorage.getItem('isLoggedIn')!=='true')location.href='adminlogin.html';
 function logout(){sessionStorage.clear();location.href='adminlogin.html';}
 
-const FORM_URLS=[
+// Borang Biasa (bukan Penggunaan Kenderaan)
+const FORM_URLS_BIASA=[
  {label:"AlatTulis2026",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=AlatTulis2026"},
  {label:"Kenderaan2026",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi?jenis=Kenderaan2026"},
- {label:"PenggunaanKenderaan2026",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=PenggunaanKenderaan2026"},
  {label:"Projektor2026",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=Projektor2026"}
+];
+
+// Penggunaan Kenderaan - diasingkan
+const FORM_URLS_PG=[
+ {label:"PenggunaanKenderaan2026",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=PenggunaanKenderaan2026"}
 ];
 
 const SCRIPT_URLS=[
@@ -223,33 +262,43 @@ function tab(x){
 }
 
 /* QR */
+let qrGenerated = false;
 function generateQR(){
- const qrGrid = document.getElementById('qrGrid');
- qrGrid.innerHTML = '';
+ if(qrGenerated) return;
+ qrGenerated = true;
 
- FORM_URLS.forEach((f,i)=>{
+ // Borang Biasa
+ const gridBiasa = document.getElementById('qrGridBiasa');
+ gridBiasa.innerHTML = '';
+ FORM_URLS_BIASA.forEach((f,i)=>{
   const card=document.createElement('div');
   card.className='qr-card';
-
-  // Warna badge khas untuk Penggunaan Kenderaan
-  const badge = f.label === 'PenggunaanKenderaan2026'
-    ? `<span class="badge-pg">Penggunaan Sahaja</span><br><br>`
-    : '';
-
   card.innerHTML=`
    <h3>QR ${f.label}</h3>
-   ${badge}
-   <div class="qr-box"><div id="qr_${i}"></div></div>
-   <button class="btn" onclick="downloadQR('qr_${i}','QR_${f.label}')">
-    Muat Turun
-   </button>
+   <div class="qr-box"><div id="qrB_${i}"></div></div>
+   <button class="btn" onclick="downloadQR('qrB_${i}','QR_${f.label}')">Muat Turun</button>
   `;
-  qrGrid.appendChild(card);
-
+  gridBiasa.appendChild(card);
   setTimeout(()=>{
-   new QRCode(document.getElementById(`qr_${i}`),{
-    text:f.url,width:200,height:200
-   });
+   new QRCode(document.getElementById(`qrB_${i}`),{text:f.url,width:200,height:200});
+  },100);
+ });
+
+ // Penggunaan Kenderaan - diasingkan
+ const gridPG = document.getElementById('qrGridPG');
+ gridPG.innerHTML = '';
+ FORM_URLS_PG.forEach((f,i)=>{
+  const card=document.createElement('div');
+  card.className='qr-card pg-card';
+  card.innerHTML=`
+   <h3>🚗 QR ${f.label}</h3>
+   <p style="color:#c2410c;font-size:13px;margin-bottom:8px;">Borang Penggunaan Sahaja</p>
+   <div class="qr-box"><div id="qrPG_${i}"></div></div>
+   <button class="btn btn-pg" onclick="downloadQR('qrPG_${i}','QR_${f.label}')">Muat Turun</button>
+  `;
+  gridPG.appendChild(card);
+  setTimeout(()=>{
+   new QRCode(document.getElementById(`qrPG_${i}`),{text:f.url,width:200,height:200});
   },100);
  });
 }
@@ -260,66 +309,110 @@ function downloadQR(id,name){
  a.href=c.toDataURL();a.download=name+'.png';a.click();
 }
 
-/* DATA & DASHBOARD */
-let all=[],filtered=[];
-
+/* =====================================================
+   FORMAT MASA - 24JAM
+   ===================================================== */
 function formatDateTime(iso){
  if(!iso) return '-';
  const d = new Date(iso);
- if(isNaN(d)) return iso; // kalau bukan ISO, return as-is
- const day = String(d.getDate()).padStart(2,'0');
+ if(isNaN(d)) return iso;
+ const day   = String(d.getDate()).padStart(2,'0');
  const month = String(d.getMonth()+1).padStart(2,'0');
- const year = d.getFullYear();
- const hours = String(d.getHours()).padStart(2,'0');
- const minutes = String(d.getMinutes()).padStart(2,'0');
- const seconds = String(d.getSeconds()).padStart(2,'0');
- return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+ const year  = d.getFullYear();
+ const hh    = String(d.getHours()).padStart(2,'0');   // 24 jam
+ const mm    = String(d.getMinutes()).padStart(2,'0');
+ const ss    = String(d.getSeconds()).padStart(2,'0');
+ return `${day}/${month}/${year} ${hh}:${mm}:${ss}`;
 }
 
+/* Format masa mentah (string masa) kepada 24jam */
+function formatMasa24(masaStr){
+ if(!masaStr || masaStr==='-') return masaStr || '-';
+ // Cuba parse kalau ada ISO/timestamp penuh
+ const d = new Date(masaStr);
+ if(!isNaN(d)){
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mm = String(d.getMinutes()).padStart(2,'0');
+  return `${hh}:${mm}`;
+ }
+ // Kalau format HH:MM atau HH:MM:SS terus
+ const match = masaStr.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+ if(match) return `${String(match[1]).padStart(2,'0')}:${match[2]}`;
+ return masaStr;
+}
+
+/* =====================================================
+   EXTRACT ITEMS
+   ===================================================== */
 function extractItems(d){
- // Penggunaan Kenderaan - tunjuk tarikh+masa dalam item column
  if(d.JenisPermohonan === 'PenggunaanKenderaan2026'){
   const parts = [];
   if(d.jenis_kenderaan && d.jenis_kenderaan !== '-') parts.push('Kenderaan: '+d.jenis_kenderaan);
-  if(d.nama_pemandu && d.nama_pemandu !== '-') parts.push('Pemandu: '+d.nama_pemandu);
-  if(d.lokasi && d.lokasi !== '-') parts.push('Lokasi: '+d.lokasi);
-  if(d.tujuan && d.tujuan !== '-') parts.push('Tujuan: '+d.tujuan);
-  if(d.tarikh && d.tarikh !== '-') parts.push('Tarikh: '+d.tarikh);
-  if(d.masa && d.masa !== '-') parts.push('Masa: '+d.masa);
+  if(d.nama_pemandu   && d.nama_pemandu   !== '-') parts.push('Pemandu: '+d.nama_pemandu);
+  if(d.lokasi         && d.lokasi         !== '-') parts.push('Lokasi: '+d.lokasi);
+  if(d.tujuan         && d.tujuan         !== '-') parts.push('Tujuan: '+d.tujuan);
+  // Tarikh - biar as-is
+  if(d.tarikh         && d.tarikh         !== '-') parts.push('Tarikh: '+d.tarikh);
+  // Masa - tukar ke 24jam
+  if(d.masa           && d.masa           !== '-') parts.push('Masa: '+formatMasa24(d.masa));
+  return parts.length ? parts.join(' | ') : '-';
+ }
+
+ // Untuk Kenderaan2026 - betulkan juga field masa/waktu kalau ada
+ if(d.JenisPermohonan === 'Kenderaan2026'){
+  const parts = [];
+  // Field biasa Kenderaan
+  if(d.Masa         && d.Masa         !== '-') parts.push('Masa: '+d.Masa);
+  if(d.NamaPemandu  && d.NamaPemandu  !== '-') parts.push('Nama Pemandu: '+d.NamaPemandu);
+  if(d.Lokasi       && d.Lokasi       !== '-') parts.push('Lokasi: '+d.Lokasi);
+  if(d.Tujuan       && d.Tujuan       !== '-') parts.push('Tujuan: '+d.Tujuan);
+
+  // Fallback: standard fields scan
+  if(!parts.length){
+   const skip=['Timestamp','Nama','Jabatan','JenisPermohonan','Email','NoTelefon'];
+   for(const key in d){
+    if(!skip.includes(key)&&d[key]&&d[key]!==''&&d[key]!=='-'){
+     parts.push(`${key}: ${d[key]}`);
+    }
+   }
+  }
   return parts.length ? parts.join(' | ') : '-';
  }
 
  const items = [];
  const possibleFields = [
-  'Item', 'ItemDiminta', 'Perkara', 'Barang',
-  'JenisBarang', 'NamaBarang', 'NamaItem',
-  'Pen', 'Pensil', 'Kertas', 'Buku',
-  'JenisKenderaan', 'ModelKenderaan',
-  'ModelProjektor', 'JenisProjektor'
+  'Item','ItemDiminta','Perkara','Barang',
+  'JenisBarang','NamaBarang','NamaItem',
+  'Pen','Pensil','Kertas','Buku',
+  'JenisKenderaan','ModelKenderaan',
+  'ModelProjektor','JenisProjektor'
  ];
 
  for(const field of possibleFields){
-  if(d[field] && d[field] !== '' && d[field] !== '-') items.push(d[field]);
+  if(d[field]&&d[field]!==''&&d[field]!=='-') items.push(d[field]);
  }
 
- if(items.length === 0){
-  const standardFields = ['Timestamp','Nama','Jabatan','JenisPermohonan','Email','NoTelefon'];
+ if(items.length===0){
+  const standardFields=['Timestamp','Nama','Jabatan','JenisPermohonan','Email','NoTelefon'];
   for(const key in d){
-   if(!standardFields.includes(key) && d[key] && d[key] !== '' && d[key] !== '-'){
+   if(!standardFields.includes(key)&&d[key]&&d[key]!==''&&d[key]!=='-'){
     items.push(`${key}: ${d[key]}`);
    }
   }
  }
 
- return items.length > 0 ? items.join(', ') : '-';
+ return items.length>0?items.join(', '):'-';
 }
+
+/* DATA & DASHBOARD */
+let all=[],filtered=[];
 
 async function loadData(){
  all=[];
- const tableData = document.getElementById('tableData');
+ const tableData=document.getElementById('tableData');
  tableData.innerHTML='<tr><td colspan="6" class="loading">Loading...</td></tr>';
  for(const s of SCRIPT_URLS){
-  if(s.url.includes('TUKAR_KE_URL')) continue; // skip kalau URL belum ditukar
+  if(s.url.includes('TUKAR_KE_URL')) continue;
   try{
    const r=await fetch(s.url);const d=await r.json();
    const rows=Array.isArray(d)?d:Object.values(d).flat();
@@ -335,10 +428,10 @@ function filterData(){
  const b=document.getElementById('fBulan').value;
  const q=document.getElementById('search').value.toLowerCase();
  filtered=all.filter(d=>{
-  const bulanData = d.Timestamp ? String(new Date(d.Timestamp).getMonth()+1).padStart(2,'0') : '';
-  const items = extractItems(d).toLowerCase();
-  return (j==='all'||d.JenisPermohonan===j) &&
-   (b==='all'||bulanData===b) &&
+  const bulanData=d.Timestamp?String(new Date(d.Timestamp).getMonth()+1).padStart(2,'0'):'';
+  const items=extractItems(d).toLowerCase();
+  return (j==='all'||d.JenisPermohonan===j)&&
+   (b==='all'||bulanData===b)&&
    ((d.Nama||'').toLowerCase().includes(q)||
     (d.Jabatan||'').toLowerCase().includes(q)||
     items.includes(q));
@@ -347,7 +440,7 @@ function filterData(){
 }
 
 function render(){
- const tableData = document.getElementById('tableData');
+ const tableData=document.getElementById('tableData');
  if(!filtered.length){
   tableData.innerHTML='<tr><td colspan="6" class="loading">Tiada Data</td></tr>';return;
  }
@@ -355,8 +448,8 @@ function render(){
  <tr>
   <td>${i+1}</td>
   <td>${d.JenisPermohonan==='PenggunaanKenderaan2026'
-    ? '<span class="badge-pg">'+d.JenisPermohonan+'</span>'
-    : d.JenisPermohonan}</td>
+    ?'<span class="badge-pg">'+d.JenisPermohonan+'</span>'
+    :d.JenisPermohonan}</td>
   <td>${d.Nama||'-'}</td>
   <td>${d.Jabatan||'-'}</td>
   <td class="item-list">${extractItems(d)}</td>
@@ -367,11 +460,11 @@ function render(){
 function exportExcel(){
  if(!filtered.length)return alert('Tiada data');
  const ws=XLSX.utils.json_to_sheet(filtered.map(d=>({
-  JenisPermohonan: d.JenisPermohonan,
-  Nama: d.Nama || '-',
-  Jabatan: d.Jabatan || '-',
-  ItemDiminta: extractItems(d),
-  Timestamp: formatDateTime(d.Timestamp)
+  JenisPermohonan:d.JenisPermohonan,
+  Nama:d.Nama||'-',
+  Jabatan:d.Jabatan||'-',
+  ItemDiminta:extractItems(d),
+  Timestamp:formatDateTime(d.Timestamp)
  })));
  const wb=XLSX.utils.book_new();
  XLSX.utils.book_append_sheet(wb,ws,'Permohonan');
@@ -391,5 +484,3 @@ document.addEventListener('DOMContentLoaded',generateQR);
 
 </body>
 </html>
-
-
