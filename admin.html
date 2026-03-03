@@ -63,8 +63,7 @@ body{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;p
  text-align:center;
  box-shadow:0 10px 25px rgba(0,0,0,.2);
 }
-.qr-card h3{color:var(--bg1);margin-bottom:8px;}
-.qr-url{font-size:10px;color:#888;word-break:break-all;margin-bottom:4px;}
+.qr-card h3{color:var(--bg1);margin-bottom:10px;}
 .qr-box{
  background:white;
  padding:15px;
@@ -87,16 +86,16 @@ body{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;p
 select,input{padding:10px;border-radius:8px;border:1px solid #ccc;flex:1;min-width:150px;}
 .table-wrap{background:var(--card);border-radius:12px;overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:14px;}
-th,td{padding:10px;border-bottom:1px solid #ddd;vertical-align:top;}
-th{background:var(--bg1);color:white;}
+th,td{padding:12px;border-bottom:1px solid #ddd;vertical-align:top;}
+th{background:var(--bg1);color:white;text-align:left;}
 .loading{text-align:center;color:var(--muted);padding:20px;}
 
 .dashboard{display:flex;gap:15px;flex-wrap:wrap;}
 .card{background:var(--card);padding:20px;border-radius:12px;flex:1;min-width:180px;text-align:center;}
-.card h2{color:var(--bg1);font-size:15px;margin-bottom:8px;}
+.card h2{color:var(--bg1);font-size:16px;margin-bottom:10px;}
 .card p{font-size:28px;font-weight:700;color:var(--bg2);}
 
-.item-list{font-size:13px;max-width:320px;line-height:1.6;}
+.item-list{font-size:13px;max-width:350px;line-height:1.5;}
 .badge-pg{
  background:#fef3c7;
  color:#92400e;
@@ -104,12 +103,13 @@ th{background:var(--bg1);color:white;}
  padding:2px 7px;
  border-radius:4px;
  font-weight:600;
+ display:inline-block;
+ margin-bottom:4px;
 }
 </style>
 </head>
 
 <body>
-
 <div class="container">
 
 <div class="header">
@@ -155,7 +155,7 @@ th{background:var(--bg1);color:white;}
   <input id="search" placeholder="Cari nama / jabatan / item" oninput="filterData()">
  </div>
  <div style="margin-bottom:15px;">
-  <button class="btn" style="width:auto; padding:10px 30px;" onclick="exportExcel()">Export Excel</button>
+  <button class="btn" style="width:auto; padding:10px 25px;" onclick="exportExcel()">Export Excel</button>
  </div>
  <div class="table-wrap">
   <table>
@@ -163,7 +163,7 @@ th{background:var(--bg1);color:white;}
     <tr><th>No</th><th>Jenis</th><th>Nama</th><th>Jabatan</th><th>Butiran Permohonan</th><th>Tarikh Hantar</th></tr>
    </thead>
    <tbody id="tableData">
-    <tr><td colspan="6" class="loading">Memuatkan...</td></tr>
+    <tr><td colspan="6" class="loading">Memuatkan data...</td></tr>
    </tbody>
   </table>
  </div>
@@ -174,7 +174,7 @@ th{background:var(--bg1);color:white;}
   <div class="card"><h2>Total Keseluruhan</h2><p id="total">0</p></div>
   <div class="card"><h2>Alat Tulis</h2><p id="alat">0</p></div>
   <div class="card"><h2>Kenderaan</h2><p id="ken">0</p></div>
-  <div class="card"><h2>Borang Pemandu</h2><p id="pgken">0</p></div>
+  <div class="card"><h2>Permohonan Kenderaan</h2><p id="pgken">0</p></div>
   <div class="card"><h2>Projektor</h2><p id="pro">0</p></div>
  </div>
 </div>
@@ -182,15 +182,15 @@ th{background:var(--bg1);color:white;}
 </div>
 
 <script>
-// SECURITY & SESSION
-if(sessionStorage.getItem('isLoggedIn') !== 'true') location.href='adminlogin.html';
+// SECURITY
+if(sessionStorage.getItem('isLoggedIn')!=='true') location.href='adminlogin.html';
 function logout(){ sessionStorage.clear(); location.href='adminlogin.html'; }
 
 const FORM_URLS = [
- {label:"AlatTulis2026", url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=AlatTulis2026"},
- {label:"Kenderaan2026", url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=Kenderaan2026"},
- {label:"PermohonanKenderaan2026", url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=PermohonanKenderaan2026"},
- {label:"Projektor2026", url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=Projektor2026"}
+ {label:"AlatTulis2026", url:"https://ict-upsiholdings.github.io/assetinventorysystem/index.html?jenis=AlatTulis2026"},
+ {label:"Kenderaan2026", url:"https://ict-upsiholdings.github.io/assetinventorysystem/index.html?jenis=Kenderaan2026"},
+ {label:"PermohonanKenderaan2026", url:"https://ict-upsiholdings.github.io/assetinventorysystem/index.html?jenis=PermohonanKenderaan2026"},
+ {label:"Projektor2026", url:"https://ict-upsiholdings.github.io/assetinventorysystem/index.html?jenis=Projektor2026"}
 ];
 
 const SCRIPT_URLS = [
@@ -200,9 +200,7 @@ const SCRIPT_URLS = [
  {label:"Projektor2026", url:"https://script.google.com/macros/s/AKfycbwp9cqsZMSqcRrB04SQLWtkR0ryjATCw113ES2cogQ3A1jlD8XOLyJ0hQ1hNJCmTknf/exec"}
 ];
 
-let all = [], filtered = [];
-
-// TAB NAVIGATION
+// TAB SYSTEM
 function tab(x){
  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
@@ -213,125 +211,103 @@ function tab(x){
  if(x==='dash') updateDash();
 }
 
-/* ====================== QR GENERATION ====================== */
+// QR GENERATION
 function generateQR(){
- const g = document.getElementById('qrGrid');
- g.innerHTML = '';
- FORM_URLS.forEach((f, i) => {
-  const card = document.createElement('div');
-  card.className = 'qr-card';
-  const isSpecial = f.label === 'PermohonanKenderaan2026';
-  
-  card.innerHTML = `
+ const g=document.getElementById('qrGrid');
+ g.innerHTML='';
+ FORM_URLS.forEach((f,i)=>{
+  const card=document.createElement('div');
+  card.className='qr-card';
+  const badge = f.label === 'PermohonanKenderaan2026' ? '<span class="badge-pg">Permohonan Sahaja</span>' : '';
+  card.innerHTML=`
    <h3>QR ${f.label}</h3>
-   ${isSpecial ? '<span class="badge-pg">Borang Pemandu</span>' : ''}
-   <p class="qr-url">${f.url}</p>
+   ${badge}
    <div class="qr-box"><div id="qr_${i}"></div></div>
    <button class="btn" onclick="downloadQR('qr_${i}','QR_${f.label}')">Muat Turun</button>
   `;
   g.appendChild(card);
-  setTimeout(() => new QRCode(document.getElementById(`qr_${i}`), {text: f.url, width: 200, height: 200}), 100);
+  setTimeout(()=>new QRCode(document.getElementById(`qr_${i}`),{text:f.url,width:200,height:200}),100);
  });
 }
 
-function downloadQR(id, name){
- const c = document.querySelector(`#${id} canvas`);
- const a = document.createElement('a');
- a.href = c.toDataURL(); a.download = name + '.png'; a.click();
+function downloadQR(id,name){
+ const c=document.querySelector(`#${id} canvas`);
+ const a=document.createElement('a');
+ a.href=c.toDataURL();a.download=name+'.png';a.click();
 }
 
-/* ====================== UTILITIES ====================== */
-function getField(obj, ...names){
- for(const name of names){
-  if(obj[name] !== undefined && obj[name] !== '' && obj[name] !== null) return obj[name];
-  const lo = name.toLowerCase();
-  for(const key in obj){
-   if(key.toLowerCase() === lo && obj[key] !== '' && obj[key] !== null) return obj[key];
-  }
- }
- return null;
+// FORMAT TIME 12-HOUR (PG/PTG)
+function formatTime12(iso){
+ if(!iso) return '-';
+ const d = new Date(iso);
+ if(isNaN(d)) return iso;
+ 
+ let h = d.getHours();
+ const m = String(d.getMinutes()).padStart(2,'0');
+ const suffix = h >= 12 ? 'PTG' : 'PG';
+ h = h % 12 || 12;
+ return `${h}:${m} ${suffix}`;
 }
 
-function formatTarikh(val){
- if(!val || val === '-' || val === '') return '-';
- const d = new Date(val);
- if(!isNaN(d)){
-  const p = n => String(n).padStart(2, '0');
-  return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`;
- }
- return val;
-}
-
-function formatMasa(val){
- if(!val || val === '-' || val === '') return '-';
- let h = -1, m = 0;
- if(typeof val === 'string' && val.includes('T')){
-  const d = new Date(val);
-  if(!isNaN(d)){ h = d.getUTCHours(); m = d.getUTCMinutes(); }
- } else if(!isNaN(parseFloat(val)) && parseFloat(val) < 1){
-  const totalMin = Math.round(parseFloat(val) * 1440);
-  h = Math.floor(totalMin/60)%24; m = totalMin%60;
- } else if(typeof val === 'string'){
-  const hm = val.match(/(\d{1,2}):(\d{2})/);
-  if(hm){ h = parseInt(hm[1]); m = parseInt(hm[2]); }
- }
- if(h < 0) return val;
- const suffix = h < 12 ? 'PG' : 'PTG';
- const h12 = h % 12 || 12;
- return `${h12}:${String(m).padStart(2, '0')} ${suffix}`;
-}
-
+// FORMAT FULL DATETIME
 function formatDateTime(iso){
  if(!iso) return '-';
  const d = new Date(iso);
  if(isNaN(d)) return iso;
- const p = n => String(n).padStart(2, '0');
- const h = d.getHours();
- const suffix = h < 12 ? 'PG' : 'PTG';
- const h12 = h % 12 || 12;
- return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${h12}:${p(d.getMinutes())} ${suffix}`;
+ const day = String(d.getDate()).padStart(2,'0');
+ const month = String(d.getMonth()+1).padStart(2,'0');
+ const year = d.getFullYear();
+ return `${day}/${month}/${year} ${formatTime12(iso)}`;
 }
 
-/* ====================== DATA LOGIC ====================== */
+// HELPER TO GET FIELD VALUE
+function getVal(obj, ...keys) {
+ for (let k of keys) {
+  if (obj[k] && obj[k] !== '' && obj[k] !== '-') return obj[k];
+ }
+ return null;
+}
+
+// EXTRACT ITEMS LOGIC
 function extractItems(d){
+ // Special Logic for PermohonanKenderaan2026
  if(d.JenisPermohonan === 'PermohonanKenderaan2026'){
-  const items = [];
-  const vKen = getField(d, 'JenisKenderaan', 'Kenderaan');
-  const vPem = getField(d, 'NamaPemandu', 'Pemandu');
-  const vLok = getField(d, 'Lokasi', 'Destinasi');
-  const vTar = formatTarikh(getField(d, 'Tarikh', 'TarikhPerjalanan'));
-  const vMas = formatMasa(getField(d, 'Masa', 'MasaPerjalanan'));
-
-  if(vKen) items.push(`Kenderaan: ${vKen}`);
-  if(vPem) items.push(`Pemandu: ${vPem}`);
-  if(vLok) items.push(`Lokasi: ${vLok}`);
-  if(vTar && vTar !== '-') items.push(`Tarikh: ${vTar}`);
-  if(vMas && vMas !== '-') items.push(`Masa: ${vMas}`);
-  
-  return items.length ? items.join(', ') : '-';
+  const jk = getVal(d, 'JenisKenderaan', 'Kenderaan', 'Jenis_kenderaan') || '-';
+  const loc = getVal(d, 'Lokasi', 'Destinasi', 'Tempat') || '-';
+  const pem = getVal(d, 'NamaPemandu', 'Pemandu', 'Nama_pemandu') || 'Tiada';
+  const tuj = getVal(d, 'Tujuan', 'Sebab', 'Keperluan') || '-';
+  return `🚗 <b>${jk}</b><br>📍 ${loc}<br>👤 ${pem}<br>📋 ${tuj}`;
  }
 
- const standard = [];
- const fields = ['Item','ItemDiminta','Perkara','Barang','JenisBarang','NamaBarang','Pen','Pensil','Kertas','Buku','ModelProjektor'];
- for(const f of fields){ const v = getField(d, f); if(v) standard.push(v); }
- if(standard.length === 0){
-  const skip = new Set(['timestamp','nama','jabatan','jenispermohonan','email','notelefon']);
-  for(const key in d){ if(!skip.has(key.toLowerCase()) && d[key]) standard.push(`${key}: ${d[key]}`); }
+ // Logic for other types
+ const items = [];
+ const fields = ['Item','ItemDiminta','Perkara','Barang','JenisBarang','NamaBarang','ModelProjektor','ModelKenderaan'];
+ fields.forEach(f => { if(d[f]) items.push(d[f]); });
+
+ if(items.length === 0){
+  const skip = ['Timestamp','Nama','Jabatan','JenisPermohonan','Email','NoTelefon'];
+  for(let key in d){
+   if(!skip.includes(key) && d[key] && d[key] !== '-') items.push(`${key}: ${d[key]}`);
+  }
  }
- return standard.length ? standard.join(', ') : '-';
+ return items.length > 0 ? items.join(', ') : '-';
 }
+
+// DATA LOADING
+let all=[], filtered=[];
 
 async function loadData(){
- all = [];
- document.getElementById('tableData').innerHTML = '<tr><td colspan="6" class="loading">⏳ Memuatkan data...</td></tr>';
+ all=[];
+ document.getElementById('tableData').innerHTML='<tr><td colspan="6" class="loading">⏳ Memuatkan data dari pelbagai sumber...</td></tr>';
+ 
  for(const s of SCRIPT_URLS){
-  try{
+  try {
    const r = await fetch(s.url);
    const d = await r.json();
    const rows = Array.isArray(d) ? d : Object.values(d).flat();
    rows.forEach(x => x.JenisPermohonan = s.label);
    all = all.concat(rows);
-  } catch(e) { console.warn('Fail load:', s.label); }
+  } catch(e) { console.error("Gagal ambil data:", s.label); }
  }
  filterData();
 }
@@ -340,15 +316,13 @@ function filterData(){
  const j = document.getElementById('fJenis').value;
  const b = document.getElementById('fBulan').value;
  const q = document.getElementById('search').value.toLowerCase();
- 
+
  filtered = all.filter(d => {
-  const bulan = d.Timestamp ? String(new Date(d.Timestamp).getMonth() + 1).padStart(2, '0') : '';
-  const itemTxt = extractItems(d).toLowerCase();
-  return (j === 'all' || d.JenisPermohonan === j) &&
-         (b === 'all' || bulan === b) &&
-         ((d.Nama || '').toLowerCase().includes(q) || 
-          (d.Jabatan || '').toLowerCase().includes(q) || 
-          itemTxt.includes(q));
+  const m = d.Timestamp ? String(new Date(d.Timestamp).getMonth()+1).padStart(2,'0') : '';
+  const searchContent = (d.Nama + d.Jabatan + extractItems(d)).toLowerCase();
+  return (j==='all' || d.JenisPermohonan===j) &&
+         (b==='all' || m===b) &&
+         (searchContent.includes(q));
  });
  render();
  updateDash();
@@ -356,24 +330,20 @@ function filterData(){
 
 function render(){
  const tbody = document.getElementById('tableData');
- if(!filtered.length){ tbody.innerHTML = '<tr><td colspan="6" class="loading">Tiada Data</td></tr>'; return; }
- tbody.innerHTML = filtered.map((d, i) => `
+ if(!filtered.length){
+  tbody.innerHTML='<tr><td colspan="6" class="loading">Tiada rekod dijumpai.</td></tr>';
+  return;
+ }
+ tbody.innerHTML = filtered.map((d,i)=>`
   <tr>
    <td>${i+1}</td>
-   <td>${d.JenisPermohonan === 'PermohonanKenderaan2026' ? '<span class="badge-pg">Borang Pemandu</span>' : d.JenisPermohonan}</td>
+   <td>${d.JenisPermohonan === 'PermohonanKenderaan2026' ? '<span class="badge-pg">Kenderaan</span>' : d.JenisPermohonan}</td>
    <td>${d.Nama || '-'}</td>
    <td>${d.Jabatan || '-'}</td>
    <td class="item-list">${extractItems(d)}</td>
    <td>${formatDateTime(d.Timestamp)}</td>
-  </tr>`).join('');
-}
-
-function updateDash(){
- document.getElementById('total').innerText = filtered.length;
- document.getElementById('alat').innerText = filtered.filter(x=>x.JenisPermohonan==='AlatTulis2026').length;
- document.getElementById('ken').innerText = filtered.filter(x=>x.JenisPermohonan==='Kenderaan2026').length;
- document.getElementById('pgken').innerText = filtered.filter(x=>x.JenisPermohonan==='PermohonanKenderaan2026').length;
- document.getElementById('pro').innerText = filtered.filter(x=>x.JenisPermohonan==='Projektor2026').length;
+  </tr>
+ `).join('');
 }
 
 function exportExcel(){
@@ -382,16 +352,23 @@ function exportExcel(){
   Jenis: d.JenisPermohonan,
   Nama: d.Nama || '-',
   Jabatan: d.Jabatan || '-',
-  Butiran: extractItems(d),
-  TarikhHantar: formatDateTime(d.Timestamp)
+  Butiran: extractItems(d).replace(/<br>/g, ' | ').replace(/<b>|<\/b>/g, ''),
+  Tarikh: formatDateTime(d.Timestamp)
  })));
  const wb = XLSX.utils.book_new();
  XLSX.utils.book_append_sheet(wb, ws, 'DataPermohonan');
- XLSX.writeFile(wb, 'Permohonan_Admin.xlsx');
+ XLSX.writeFile(wb, 'Permohonan_UPSI_Holdings.xlsx');
+}
+
+function updateDash(){
+ document.getElementById('total').innerText = filtered.length;
+ document.getElementById('alat').innerText = filtered.filter(x => x.JenisPermohonan === 'AlatTulis2026').length;
+ document.getElementById('ken').innerText = filtered.filter(x => x.JenisPermohonan === 'Kenderaan2026').length;
+ document.getElementById('pgken').innerText = filtered.filter(x => x.JenisPermohonan === 'PermohonanKenderaan2026').length;
+ document.getElementById('pro').innerText = filtered.filter(x => x.JenisPermohonan === 'Projektor2026').length;
 }
 
 document.addEventListener('DOMContentLoaded', generateQR);
 </script>
-
 </body>
 </html>
