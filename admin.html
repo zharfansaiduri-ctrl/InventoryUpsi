@@ -16,8 +16,6 @@
  --card:#F4F6F8;
  --accent:#12D8FA;
  --muted:#6B7280;
- --orange:#f97316;
- --orange-light:#fff7ed;
 }
 *{box-sizing:border-box;margin:0;padding:0;font-family:'League Spartan',sans-serif;}
 body{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;padding:20px;}
@@ -52,22 +50,6 @@ body{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;p
 .content{display:none;}
 .content.active{display:block;}
 
-/* QR SECTIONS */
-.qr-section-title{
- color:white;
- font-size:18px;
- font-weight:700;
- margin:25px 0 12px;
- padding:10px 16px;
- background:rgba(255,255,255,0.15);
- border-radius:10px;
- border-left:4px solid var(--accent);
-}
-.qr-section-title.pg-title{
- border-left:4px solid var(--orange);
- background:rgba(249,115,22,0.15);
-}
-
 .qr-grid{
  display:grid;
  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
@@ -80,12 +62,7 @@ body{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;p
  text-align:center;
  box-shadow:0 10px 25px rgba(0,0,0,.2);
 }
-.qr-card.pg-card{
- border:2px solid var(--orange);
- background:linear-gradient(135deg,#fff7ed,#fff);
-}
 .qr-card h3{color:var(--bg1);}
-.qr-card.pg-card h3{color:#c2410c;}
 .qr-box{
  background:white;
  padding:15px;
@@ -102,9 +79,6 @@ body{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;p
  border-radius:10px;
  font-weight:600;
  cursor:pointer;
-}
-.btn-pg{
- background:linear-gradient(135deg,var(--orange),#fb923c);
 }
 
 /* data + dashboard */
@@ -257,8 +231,10 @@ function generateQR(){
   const card=document.createElement('div');
   card.className='qr-card';
 
+  // Warna badge khas untuk Penggunaan Kenderaan
   const badge = f.label === 'PenggunaanKenderaan2026'
-    ;
+    ? `<span class="badge-pg">Penggunaan Sahaja</span><br><br>`
+    : '';
 
   card.innerHTML=`
    <h3>QR ${f.label}</h3>
@@ -284,111 +260,66 @@ function downloadQR(id,name){
  a.href=c.toDataURL();a.download=name+'.png';a.click();
 }
 
-/* =====================================================
-   FORMAT MASA - 24JAM
-   ===================================================== */
+/* DATA & DASHBOARD */
+let all=[],filtered=[];
+
 function formatDateTime(iso){
  if(!iso) return '-';
  const d = new Date(iso);
- if(isNaN(d)) return iso;
- const day   = String(d.getDate()).padStart(2,'0');
+ if(isNaN(d)) return iso; // kalau bukan ISO, return as-is
+ const day = String(d.getDate()).padStart(2,'0');
  const month = String(d.getMonth()+1).padStart(2,'0');
- const year  = d.getFullYear();
- const hh    = String(d.getHours()).padStart(2,'0');   // 24 jam
- const mm    = String(d.getMinutes()).padStart(2,'0');
- const ss    = String(d.getSeconds()).padStart(2,'0');
- return `${day}/${month}/${year} ${hh}:${mm}:${ss}`;
+ const year = d.getFullYear();
+ const hours = String(d.getHours()).padStart(2,'0');
+ const minutes = String(d.getMinutes()).padStart(2,'0');
+ const seconds = String(d.getSeconds()).padStart(2,'0');
+ return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
 }
 
-/* Format masa mentah (string masa) kepada 24jam */
-function formatMasa24(masaStr){
- if(!masaStr || masaStr==='-') return masaStr || '-';
-
- // Cuba extract masa dari ISO string (T##:##:##)
- const isoMatch = masaStr.match(/T(\d{2}):(\d{2}):(\d{2})/);
- if(isoMatch){
-  return `${isoMatch[1]}:${isoMatch[2]}`;
- }
-
- // Kalau format HH:MM atau HH:MM:SS terus
- const match = masaStr.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
- if(match) return `${String(match[1]).padStart(2,'0')}:${match[2]}`;
-
- return masaStr;
-}
-
-/* =====================================================
-   EXTRACT ITEMS
-   ===================================================== */
 function extractItems(d){
+ // Penggunaan Kenderaan - tunjuk tarikh+masa dalam item column
  if(d.JenisPermohonan === 'PenggunaanKenderaan2026'){
   const parts = [];
   if(d.jenis_kenderaan && d.jenis_kenderaan !== '-') parts.push('Kenderaan: '+d.jenis_kenderaan);
-  if(d.nama_pemandu   && d.nama_pemandu   !== '-') parts.push('Pemandu: '+d.nama_pemandu);
-  if(d.lokasi         && d.lokasi         !== '-') parts.push('Lokasi: '+d.lokasi);
-  if(d.tujuan         && d.tujuan         !== '-') parts.push('Tujuan: '+d.tujuan);
-  // Tarikh - biar as-is
-  if(d.tarikh         && d.tarikh         !== '-') parts.push('Tarikh: '+d.tarikh);
-  // Masa - tukar ke 24jam
-  if(d.masa           && d.masa           !== '-') parts.push('Masa: '+formatMasa24(d.masa));
-  return parts.length ? parts.join(' | ') : '-';
- }
-
- // Untuk Kenderaan2026 - betulkan juga field masa/waktu kalau ada
- if(d.JenisPermohonan === 'Kenderaan2026'){
-  const parts = [];
-  // Field biasa Kenderaan
-  if(d.Masa         && d.Masa         !== '-') parts.push('Masa: '+d.Masa);
-  if(d.NamaPemandu  && d.NamaPemandu  !== '-') parts.push('Nama Pemandu: '+d.NamaPemandu);
-  if(d.Lokasi       && d.Lokasi       !== '-') parts.push('Lokasi: '+d.Lokasi);
-  if(d.Tujuan       && d.Tujuan       !== '-') parts.push('Tujuan: '+d.Tujuan);
-
-  // Fallback: standard fields scan
-  if(!parts.length){
-   const skip=['Timestamp','Nama','Jabatan','JenisPermohonan','Email','NoTelefon'];
-   for(const key in d){
-    if(!skip.includes(key)&&d[key]&&d[key]!==''&&d[key]!=='-'){
-     parts.push(`${key}: ${d[key]}`);
-    }
-   }
-  }
+  if(d.nama_pemandu && d.nama_pemandu !== '-') parts.push('Pemandu: '+d.nama_pemandu);
+  if(d.lokasi && d.lokasi !== '-') parts.push('Lokasi: '+d.lokasi);
+  if(d.tujuan && d.tujuan !== '-') parts.push('Tujuan: '+d.tujuan);
+  if(d.tarikh && d.tarikh !== '-') parts.push('Tarikh: '+d.tarikh);
+  if(d.masa && d.masa !== '-') parts.push('Masa: '+d.masa);
   return parts.length ? parts.join(' | ') : '-';
  }
 
  const items = [];
  const possibleFields = [
-  'Item','ItemDiminta','Perkara','Barang',
-  'JenisBarang','NamaBarang','NamaItem',
-  'Pen','Pensil','Kertas','Buku',
-  'JenisKenderaan','ModelKenderaan',
-  'ModelProjektor','JenisProjektor'
+  'Item', 'ItemDiminta', 'Perkara', 'Barang',
+  'JenisBarang', 'NamaBarang', 'NamaItem',
+  'Pen', 'Pensil', 'Kertas', 'Buku',
+  'JenisKenderaan', 'ModelKenderaan',
+  'ModelProjektor', 'JenisProjektor'
  ];
 
  for(const field of possibleFields){
-  if(d[field]&&d[field]!==''&&d[field]!=='-') items.push(d[field]);
+  if(d[field] && d[field] !== '' && d[field] !== '-') items.push(d[field]);
  }
 
- if(items.length===0){
-  const standardFields=['Timestamp','Nama','Jabatan','JenisPermohonan','Email','NoTelefon'];
+ if(items.length === 0){
+  const standardFields = ['Timestamp','Nama','Jabatan','JenisPermohonan','Email','NoTelefon'];
   for(const key in d){
-   if(!standardFields.includes(key)&&d[key]&&d[key]!==''&&d[key]!=='-'){
+   if(!standardFields.includes(key) && d[key] && d[key] !== '' && d[key] !== '-'){
     items.push(`${key}: ${d[key]}`);
    }
   }
  }
 
- return items.length>0?items.join(', '):'-';
+ return items.length > 0 ? items.join(', ') : '-';
 }
-
-/* DATA & DASHBOARD */
-let all=[],filtered=[];
 
 async function loadData(){
  all=[];
- const tableData=document.getElementById('tableData');
+ const tableData = document.getElementById('tableData');
  tableData.innerHTML='<tr><td colspan="6" class="loading">Loading...</td></tr>';
  for(const s of SCRIPT_URLS){
-  if(s.url.includes('TUKAR_KE_URL')) continue;
+  if(s.url.includes('TUKAR_KE_URL')) continue; // skip kalau URL belum ditukar
   try{
    const r=await fetch(s.url);const d=await r.json();
    const rows=Array.isArray(d)?d:Object.values(d).flat();
@@ -404,10 +335,10 @@ function filterData(){
  const b=document.getElementById('fBulan').value;
  const q=document.getElementById('search').value.toLowerCase();
  filtered=all.filter(d=>{
-  const bulanData=d.Timestamp?String(new Date(d.Timestamp).getMonth()+1).padStart(2,'0'):'';
-  const items=extractItems(d).toLowerCase();
-  return (j==='all'||d.JenisPermohonan===j)&&
-   (b==='all'||bulanData===b)&&
+  const bulanData = d.Timestamp ? String(new Date(d.Timestamp).getMonth()+1).padStart(2,'0') : '';
+  const items = extractItems(d).toLowerCase();
+  return (j==='all'||d.JenisPermohonan===j) &&
+   (b==='all'||bulanData===b) &&
    ((d.Nama||'').toLowerCase().includes(q)||
     (d.Jabatan||'').toLowerCase().includes(q)||
     items.includes(q));
@@ -416,7 +347,7 @@ function filterData(){
 }
 
 function render(){
- const tableData=document.getElementById('tableData');
+ const tableData = document.getElementById('tableData');
  if(!filtered.length){
   tableData.innerHTML='<tr><td colspan="6" class="loading">Tiada Data</td></tr>';return;
  }
@@ -424,8 +355,8 @@ function render(){
  <tr>
   <td>${i+1}</td>
   <td>${d.JenisPermohonan==='PenggunaanKenderaan2026'
-    ?'<span class="badge-pg">'+d.JenisPermohonan+'</span>'
-    :d.JenisPermohonan}</td>
+    ? '<span class="badge-pg">'+d.JenisPermohonan+'</span>'
+    : d.JenisPermohonan}</td>
   <td>${d.Nama||'-'}</td>
   <td>${d.Jabatan||'-'}</td>
   <td class="item-list">${extractItems(d)}</td>
@@ -436,11 +367,11 @@ function render(){
 function exportExcel(){
  if(!filtered.length)return alert('Tiada data');
  const ws=XLSX.utils.json_to_sheet(filtered.map(d=>({
-  JenisPermohonan:d.JenisPermohonan,
-  Nama:d.Nama||'-',
-  Jabatan:d.Jabatan||'-',
-  ItemDiminta:extractItems(d),
-  Timestamp:formatDateTime(d.Timestamp)
+  JenisPermohonan: d.JenisPermohonan,
+  Nama: d.Nama || '-',
+  Jabatan: d.Jabatan || '-',
+  ItemDiminta: extractItems(d),
+  Timestamp: formatDateTime(d.Timestamp)
  })));
  const wb=XLSX.utils.book_new();
  XLSX.utils.book_append_sheet(wb,ws,'Permohonan');
