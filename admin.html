@@ -269,12 +269,12 @@ function formatDateTime(iso){
 function extractItems(d){
  if(d.JenisPermohonan === 'PermohonanKenderaan2026'){
   const parts = [];
-  if(d.jenis_kenderaan && d.jenis_kenderaan !== '-') parts.push('Kenderaan: ' + d.jenis_kenderaan);
-  if(d.nama_pemandu    && d.nama_pemandu    !== '-') parts.push('Pemandu: '   + d.nama_pemandu);
-  if(d.lokasi          && d.lokasi          !== '-') parts.push('Lokasi: '    + d.lokasi);
-  if(d.tujuan          && d.tujuan          !== '-') parts.push('Tujuan: '    + d.tujuan);
-  if(d.tarikh          && d.tarikh          !== '-') parts.push('Tarikh: '    + d.tarikh);
-  if(d.masa            && d.masa            !== '-') parts.push('Masa: '      + d.masa);
+  if(d.jenis_kenderaan && d.jenis_kenderaan !== '-') parts.push('Kenderaan: ' + d.Jenis_kenderaan);
+  if(d.nama_pemandu    && d.nama_pemandu    !== '-') parts.push('Pemandu: '   + d.Nama_pemandu);
+  if(d.lokasi          && d.lokasi          !== '-') parts.push('Lokasi: '    + d.Lokasi);
+  if(d.tujuan          && d.tujuan          !== '-') parts.push('Tujuan: '    + d.Tujuan);
+  if(d.tarikh          && d.tarikh          !== '-') parts.push('Tarikh: '    + d.Tarikh);
+  if(d.masa            && d.masa            !== '-') parts.push('Masa: '      + d.Masa);
   return parts.length ? parts.join(' | ') : '-';
  }
 
@@ -378,5 +378,6 @@ document.addEventListener('DOMContentLoaded', generateQR);
 
 </body>
 </html>
+
 
 
