@@ -344,14 +344,14 @@ document.getElementById('assetForm').addEventListener('submit', async e=>{
     data.lokasi = lokasi.value || '-';
     data.tujuan = tujuan.value || '-';
     data.bacaan_odometer = bacaanOdo.value || '-';
-  } else if(jenis === 'penggunaan_kenderaan'){
+  } else if(jenis === 'permohonan_kenderaan'){
     data.jenis_kenderaan = pgJenisKenderaan.value || '-';
     data.nama_pemandu = pgNamaPemandu.value || '-';
     data.lokasi = pgLokasi.value || '-';
     data.tujuan = pgTujuan.value || '-';
     data.tarikh = pgTarikh.value || '-';
     data.masa = pgMasa.value || '-';
-    data.jenis_permohonan = 'PenggunaanKenderaan2026';
+    data.jenis_permohonan = 'PermohonanKenderaan2026';
   } else if(jenis === 'projektor'){
     data.no_projektor = noProjektor.value || '-';
   }
@@ -390,7 +390,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     mappedJenis = 'alat_tulis';
   } else if(jenisParam === 'Kenderaan' || jenisParam === 'Kenderaan2026'){
     mappedJenis = 'kenderaan';
-  } else if(jenisParam === 'PermohonanKenderaan' || jenisParam === 'PermohonanKenderaan'){
+  } else if(jenisParam === 'PermohonanKenderaan' || jenisParam === 'PermohonanKenderaan2026'){
     mappedJenis = 'permohonan_kenderaan';
   } else if(jenisParam === 'Projektor' || jenisParam === 'Projektor2026'){
     mappedJenis = 'projektor';
@@ -411,6 +411,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
 </body>
 </html>
+
 
 
 
