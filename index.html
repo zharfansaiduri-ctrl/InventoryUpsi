@@ -289,7 +289,11 @@ button:disabled{opacity:.6;cursor:not-allowed}
     <!-- KENDERAAN PENGGUNAAN -->
     <div id="wrap_jenisKenderaan" class="hidden">
       <label>Jenis Kenderaan</label>
-      <input type="text" id="jenisKenderaan" placeholder="Contoh: Van">
+      <select id="jenisKenderaan">
+        <option value="">-- Pilih Kenderaan --</option>
+        <option value="Inova">Inova</option>
+        <option value="Hilux">Hilux</option>
+      </select>
     </div>
     <div id="wrap_masa" class="hidden">
       <label>Masa</label>
@@ -319,7 +323,11 @@ button:disabled{opacity:.6;cursor:not-allowed}
     <!-- PERMOHONAN KENDERAAN -->
     <div id="wrap_pgJenisKenderaan" class="hidden">
       <label>Jenis Kenderaan</label>
-      <input type="text" id="pgJenisKenderaan" placeholder="Contoh: Van, Kereta...">
+      <select id="pgJenisKenderaan">
+        <option value="">-- Pilih Kenderaan --</option>
+        <option value="Inova">Inova</option>
+        <option value="Hilux">Hilux</option>
+      </select>
     </div>
     <div id="wrap_pgTarikhPergi" class="hidden">
       <label>Tarikh Pergi <span style="color:red">*</span></label>
@@ -441,7 +449,6 @@ async function loadNames(){
       ? 'Taip untuk cari nama...'
       : 'Taip nama anda...';
 
-    // Kalau API gagal dan tiada data — buka dua-dua field terus
     if(!namesData.length){
       setJabatanEditable();
     }
@@ -482,14 +489,12 @@ function setupAutocomplete(){
     const q = nama.value.trim();
     jab.value = '';
 
-    // Kosong — reset semula
     if(!q){
       drop.classList.add('hidden');
       setJabatanReadonly();
       return;
     }
 
-    // API gagal / tiada data — bagi isi manual terus
     if(!namesData.length){
       setJabatanEditable();
       drop.classList.add('hidden');
@@ -500,14 +505,12 @@ function setupAutocomplete(){
       (x.Nama||'').toLowerCase().includes(q.toLowerCase())
     ).slice(0, 20);
 
-    // Tiada nama sepadan — bagi isi jabatan manual
     if(!filtered.length){
       setJabatanEditable();
       drop.classList.add('hidden');
       return;
     }
 
-    // Ada nama sepadan — tunjuk dropdown, kunci jabatan dulu
     setJabatanReadonly();
     drop.innerHTML = '';
     filtered.forEach(item => {
@@ -521,7 +524,6 @@ function setupAutocomplete(){
         nama.value = item.Nama;
         jab.value  = item.Jabatan || item.Dept || '';
         drop.classList.add('hidden');
-        // Nama dipilih dari senarai — kunci jabatan
         setJabatanReadonly();
       };
       drop.appendChild(d);
@@ -529,17 +531,14 @@ function setupAutocomplete(){
     drop.classList.remove('hidden');
   });
 
-  // Klik luar dropdown
   document.addEventListener('click', e => {
     if(!drop.contains(e.target) && !nama.contains(e.target)){
       drop.classList.add('hidden');
-      // Semak sama ada nama yang ditaip ada dalam senarai atau tidak
       if(namesData.length && nama.value.trim()){
         const exactMatch = namesData.some(x =>
           (x.Nama||'').toLowerCase() === nama.value.trim().toLowerCase()
         );
         if(!exactMatch){
-          // Nama tak ada dalam senarai — bagi isi jabatan manual
           setJabatanEditable();
         }
       }
@@ -564,7 +563,6 @@ function updateFieldsByJenis(jenis){
       el.querySelectorAll('input,select').forEach(inp => inp.value = '');
     }
   });
-  // Reset clock displays
   ['clockDisplay','clockDisplayKend'].forEach(id => {
     const el = document.getElementById(id);
     if(el){ el.textContent = 'Pilih masa...'; el.classList.add('ct-placeholder'); }
@@ -817,7 +815,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadNames();
   setupAutocomplete();
 
-  // Clock face click (set by angle)
   document.getElementById('clockFace').addEventListener('click', function(e){
     if(e.target.classList.contains('clock-tick')) return;
     const rect = this.getBoundingClientRect();
@@ -853,7 +850,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btnAM').addEventListener('click',  () => { clockAmPm = 'AM';   updateClockUI(); });
   document.getElementById('btnPM').addEventListener('click',  () => { clockAmPm = 'PM';   updateClockUI(); });
 
-  // URL param jenis
   const params      = new URLSearchParams(window.location.search);
   const jenisParam  = params.get('jenis');
   const mappedJenis = jenisParam ? (jenisMap[jenisParam] || '') : '';
