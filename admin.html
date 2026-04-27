@@ -44,7 +44,6 @@ body{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;p
  background:rgba(255,255,255,.2);
  color:white;font-weight:600;
  text-align:center;cursor:pointer;
- transition:.2s;
 }
 .tab.active{background:var(--card);color:var(--bg1);}
 
@@ -63,15 +62,12 @@ body{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;p
  text-align:center;
  box-shadow:0 10px 25px rgba(0,0,0,.2);
 }
-.qr-card h3{color:var(--bg1);margin-bottom:8px;}
-
-/* CSS qr-url telah dibuang kerana tidak digunakan lagi */
-
+.qr-card h3{color:var(--bg1);}
 .qr-box{
  background:white;
  padding:15px;
  border-radius:12px;
- margin:12px auto;
+ margin:15px auto;
  display:flex;
  justify-content:center;
 }
@@ -89,23 +85,14 @@ body{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;p
 select,input{padding:10px;border-radius:8px;border:1px solid #ccc;flex:1;min-width:150px;}
 .table-wrap{background:var(--card);border-radius:12px;overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:14px;}
-th,td{padding:10px;border-bottom:1px solid #ddd;vertical-align:top;}
+th,td{padding:10px;border-bottom:1px solid #ddd;}
 th{background:var(--bg1);color:white;}
 .loading{text-align:center;color:var(--muted);padding:20px;}
 .dashboard{display:flex;gap:15px;flex-wrap:wrap;}
 .card{background:var(--card);padding:20px;border-radius:12px;flex:1;min-width:180px;text-align:center;}
-.card h2{color:var(--bg1);font-size:15px;margin-bottom:8px;}
-.card p{font-size:28px;font-weight:700;color:var(--bg2);}
+.card h2{color:var(--bg1);}
 
 .item-list{font-size:13px;max-width:320px;line-height:1.8;}
-.badge-pg{
- background:#fef3c7;
- color:#92400e;
- font-size:11px;
- padding:2px 7px;
- border-radius:4px;
- font-weight:600;
-}
 </style>
 </head>
 
@@ -124,18 +111,20 @@ th{background:var(--bg1);color:white;}
  <div class="tab" onclick="tab('dash')">Dashboard</div>
 </div>
 
+<!-- QR -->
 <div id="qr" class="content active">
  <div class="qr-grid" id="qrGrid"></div>
 </div>
 
+<!-- DATA -->
 <div id="data" class="content">
  <div class="filter">
   <select id="fJenis" onchange="filterData()">
    <option value="all">Semua Jenis</option>
-   <option>AlatTulis2026</option>
-   <option>Kenderaan2026</option>
-   <option>PermohonanKenderaan2026</option>
-   <option>Projektor2026</option>
+   <option value="AlatTulis2026">AlatTulis2026</option>
+   <option value="Kenderaan2026">PenggunaanKenderaan2026</option>
+   <option value="PermohonanKenderaan2026">PermohonanKenderaan2026</option>
+   <option value="Projektor2026">Projektor2026</option>
   </select>
   <select id="fBulan" onchange="filterData()">
    <option value="all">Semua Bulan</option>
@@ -169,11 +158,12 @@ th{background:var(--bg1);color:white;}
  </div>
 </div>
 
+<!-- DASHBOARD -->
 <div id="dash" class="content">
  <div class="dashboard">
   <div class="card"><h2>Total</h2><p id="total">0</p></div>
   <div class="card"><h2>Alat Tulis</h2><p id="alat">0</p></div>
-  <div class="card"><h2>Kenderaan</h2><p id="ken">0</p></div>
+  <div class="card"><h2>Penggunaan Kenderaan</h2><p id="ken">0</p></div>
   <div class="card"><h2>Permohonan Kenderaan</h2><p id="pgken">0</p></div>
   <div class="card"><h2>Projektor</h2><p id="pro">0</p></div>
  </div>
@@ -182,169 +172,202 @@ th{background:var(--bg1);color:white;}
 </div>
 
 <script>
-// SECURITY
 if(sessionStorage.getItem('isLoggedIn')!=='true') location.href='adminlogin.html';
 function logout(){ sessionStorage.clear(); location.href='adminlogin.html'; }
 
-const FORM_URLS = [
- {label:"AlatTulis2026",          url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=AlatTulis2026"},
- {label:"Kenderaan2026",          url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=Kenderaan2026"},
- {label:"PermohonanKenderaan2026",url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=PermohonanKenderaan2026"},
- {label:"Projektor2026",          url:"https://zharfansaiduri-ctrl.github.io/InventoryUpsi/index.html?jenis=Projektor2026"}
+const qrGrid = document.getElementById('qrGrid');
+
+const FORM_URLS=[
+ {label:"AlatTulis2026",              url:"https://ict-upsiholdings.github.io/assetinventorysystem/index.html?jenis=AlatTulis2026"},
+ {label:"PenggunaanKenderaan2026",    url:"https://ict-upsiholdings.github.io/assetinventorysystem/index.html?jenis=Kenderaan2026"},
+ {label:"PermohonanKenderaan2026",    url:"https://ict-upsiholdings.github.io/assetinventorysystem/index.html?jenis=PermohonanKenderaan2026"},
+ {label:"Projektor2026",              url:"https://ict-upsiholdings.github.io/assetinventorysystem/index.html?jenis=Projektor2026"}
 ];
 
-const SCRIPT_URLS = [
- {label:"AlatTulis2026",          url:"https://script.google.com/macros/s/AKfycbyXUmQO6701Tv7f7vl7xuFcVgdvw0vKUSUiCjNiTx_blv2XPaYL1dPenP09ulcwc6Ug6w/exec"},
- {label:"Kenderaan2026",          url:"https://script.google.com/macros/s/AKfycby0eimKxmekifIZFVHw4HnQCaIVmpXQiYJ27usQpNv7v1kCVanOyqo1X-d-N4msUKnq/exec"},
- {label:"PermohonanKenderaan2026",url:"https://script.google.com/macros/s/AKfycbzv_OAsVHSyarm6mTFXILvFH0458FvV_8PUBdoSAeK3XPrn9nqhePD_CMRrpLWcsBMl/exec"},
- {label:"Projektor2026",          url:"https://script.google.com/macros/s/AKfycbwp9cqsZMSqcRrB04SQLWtkR0ryjATCw113ES2cogQ3A1jlD8XOLyJ0hQ1hNJCmTknf/exec"}
+const SCRIPT_URLS=[
+ {label:"AlatTulis2026",           url:"https://script.google.com/macros/s/AKfycbyXUmQO6701Tv7f7vl7xuFcVgdvw0vKUSUiCjNiTx_blv2XPaYL1dPenP09ulcwc6Ug6w/exec"},
+ {label:"Kenderaan2026",           url:"https://script.google.com/macros/s/AKfycby0eimKxmekifIZFVHw4HnQCaIVmpXQiYJ27usQpNv7v1kCVanOyqo1X-d-N4msUKnq/exec"},
+ {label:"PermohonanKenderaan2026", url:"https://script.google.com/macros/s/AKfycbxH7koKK9pRbqBtk8XSgDEBYI-za0GApr8QW-cWCOcNFmmvTubTVlh5AIpUlCJPL78T/exec"},
+ {label:"Projektor2026",           url:"https://script.google.com/macros/s/AKfycbwp9cqsZMSqcRrB04SQLWtkR0ryjATCw113ES2cogQ3A1jlD8XOLyJ0hQ1hNJCmTknf/exec"}
 ];
 
-// ── Tab ────────────────────────────────────────────────────────────────
+const SKIP_FIELDS = [
+ 'timestamp','nama','jabatan','jenispermohonan',
+ 'jenis_permohonan','email','notelefon','no_telefon','_jenis'
+];
+
+// ✅ Field jenis kenderaan yang perlu keluar PERTAMA (huruf kecil semua)
+const PRIORITY_FIELDS = [
+ 'jeniskenderaan','jenis_kenderaan','jenis kenderaan',
+ 'kenderaan','jenis kereta','jeniskereta',
+ 'vehicle','vehicletype','type','jenis'
+];
+
+/* ══════════════════════════
+   TAB
+══════════════════════════ */
 function tab(x){
  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
  document.querySelector(`[onclick="tab('${x}')"]`).classList.add('active');
  document.getElementById(x).classList.add('active');
- if(x==='qr')   generateQR();
+ if(x==='qr')  generateQR();
  if(x==='data') loadData();
  if(x==='dash') updateDash();
 }
 
-// ── QR ─────────────────────────────────────────────────────────────────
+/* ══════════════════════════
+   QR
+══════════════════════════ */
 function generateQR(){
- const g=document.getElementById('qrGrid');
- g.innerHTML='';
+ qrGrid.innerHTML='';
  FORM_URLS.forEach((f,i)=>{
   const card=document.createElement('div');
   card.className='qr-card';
-  const badge=f.label==='PermohonanKenderaan2026'?`<span class="badge-pg">Permohonan Sahaja</span><br>`:'';
-  
-  // URL teks (qr-url) telah dibuang dari baris di bawah:
-  card.innerHTML=`<h3>QR ${f.label}</h3>${badge}
+  card.innerHTML=`
+   <h3>QR ${f.label}</h3>
    <div class="qr-box"><div id="qr_${i}"></div></div>
    <button class="btn" onclick="downloadQR('qr_${i}','QR_${f.label}')">Muat Turun</button>`;
-   
-  g.appendChild(card);
-  setTimeout(()=>new QRCode(document.getElementById(`qr_${i}`),{text:f.url,width:200,height:200}),100);
+  qrGrid.appendChild(card);
+  setTimeout(()=>{
+   new QRCode(document.getElementById(`qr_${i}`),{text:f.url,width:200,height:200});
+  },100);
  });
 }
+
 function downloadQR(id,name){
  const c=document.querySelector(`#${id} canvas`);
  const a=document.createElement('a');
- a.href=c.toDataURL();a.download=name+'.png';a.click();
+ a.href=c.toDataURL();
+ a.download=name+'.png';
+ a.click();
 }
 
-// ── FORMAT TARIKH ──────────────────────────────────
-function formatTarikh(val){
- if(!val||val==='-'||val==='') return '-';
- if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(String(val))) return val;
+/* ══════════════════════════
+   FORMAT
+══════════════════════════ */
+function formatDateTime(val){
+ if(!val) return '-';
  const d=new Date(val);
- if(!isNaN(d)){
-  const p=n=>String(n).padStart(2,'0');
-  return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`;
- }
- return val;
+ if(isNaN(d)) return String(val);
+ const dd  =String(d.getDate()).padStart(2,'0');
+ const mm  =String(d.getMonth()+1).padStart(2,'0');
+ const yyyy=d.getFullYear();
+ const hh  =String(d.getHours()).padStart(2,'0');
+ const min =String(d.getMinutes()).padStart(2,'0');
+ const ss  =String(d.getSeconds()).padStart(2,'0');
+ return `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`;
 }
 
-// ── FORMAT MASA ─────────────────
-function formatMasa(val){
- if(!val||val==='-'||val==='') return '-';
- let h=-1, m=0;
- if(typeof val==='string' && val.includes('T')){
-  const d=new Date(val);
-  if(!isNaN(d)){ h=d.getUTCHours(); m=d.getUTCMinutes(); }
- }
- else if(!isNaN(parseFloat(val)) && parseFloat(val)>=0 && parseFloat(val)<1){
-  const totalMin=Math.round(parseFloat(val)*24*60);
-  h=Math.floor(totalMin/60)%24;
-  m=totalMin%60;
- }
- else if(typeof val==='string'){
-  const ampm=val.match(/(\d{1,2}):(\d{2})\s*(AM|PM|PG|PTG|PAGI|PETANG)/i);
-  if(ampm){
-   h=parseInt(ampm[1]); m=parseInt(ampm[2]);
-   const per=ampm[3].toUpperCase();
-   if((per==='PM'||per==='PTG'||per==='PETANG')&&h!==12) h+=12;
-   if((per==='AM'||per==='PG'||per==='PAGI')&&h===12) h=0;
-  } else {
-   const hm=val.match(/(\d{1,2}):(\d{2})/);
-   if(hm){h=parseInt(hm[1]);m=parseInt(hm[2]);}
+function formatValue(val){
+ if(val===null||val===undefined) return '-';
+ const str=String(val).trim();
+ if(str===''||str==='-') return '-';
+
+ if(/^1899-12-30T/i.test(str)){
+  const d = new Date(str);
+  if(!isNaN(d)){
+    return String(d.getHours()).padStart(2,'0') + ':' +
+           String(d.getMinutes()).padStart(2,'0');
   }
  }
- if(h<0) return String(val);
- const suffix=h<12?'PG':'PTG';
- const h12=h%12||12;
- const p=n=>String(n).padStart(2,'0');
- return `${h12}:${p(m)} ${suffix}`;
-}
 
-// ── FORMAT TIMESTAMP ────────────────────────────
-function formatDateTime(iso){
- if(!iso) return '-';
- const d=new Date(iso);
- if(isNaN(d)) return iso;
- const p=n=>String(n).padStart(2,'0');
- const h=d.getHours();
- const suffix=h<12?'PG':'PTG';
- const h12=h%12||12;
- return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${h12}:${p(d.getMinutes())} ${suffix}`;
-}
-
-// ── getField case-insensitive ─────────────────────────────────────────
-function getField(obj,...names){
- for(const name of names){
-  if(obj[name]!==undefined&&obj[name]!==''&&obj[name]!==null) return obj[name];
-  const lo=name.toLowerCase();
-  for(const key in obj){
-   if(key.toLowerCase()===lo&&obj[key]!=='') return obj[key];
+ if(/^\d{4}-\d{2}-\d{2}T/i.test(str)){
+  const d=new Date(str);
+  if(!isNaN(d)){
+   const hh=d.getHours(), mn=d.getMinutes();
+   const dateStr=String(d.getDate()).padStart(2,'0')+'/'+
+                 String(d.getMonth()+1).padStart(2,'0')+'/'+
+                 d.getFullYear();
+   if(hh===0 && mn===0) return dateStr;
+   return dateStr+' '+String(hh).padStart(2,'0')+':'+String(mn).padStart(2,'0');
   }
  }
- return null;
-}
 
-// ── extractItems ──────────────────────────────────────────────────────
-function extractItems(d, forExport=false){
- if(d.JenisPermohonan==='PermohonanKenderaan2026'){
-  const parts=[];
-  const jenisKen   =getField(d,'JenisKenderaan','Jenis_kenderaan','Kenderaan');
-  const namaPemandu=getField(d,'NamaPemandu','Nama_pemandu','Pemandu');
-  const lokasi     =getField(d,'Lokasi','Destinasi','Tempat');
-  const tujuan     =getField(d,'Tujuan','Sebab');
-  const tarikhRaw  =getField(d,'Tarikh','TarikhPerjalanan');
-  const masaRaw    =getField(d,'Masa','MasaPerjalanan');
-
-  const tarikhFmt=formatTarikh(tarikhRaw);
-  const masaFmt  =formatMasa(masaRaw);
-
-  if(jenisKen)   parts.push({label:'Kenderaan',val:jenisKen});
-  if(namaPemandu)parts.push({label:'Pemandu',val:namaPemandu});
-  if(lokasi)     parts.push({label:'Lokasi',val:lokasi});
-  if(tujuan)     parts.push({label:'Tujuan',val:tujuan});
-  if(tarikhFmt&&tarikhFmt!=='-') parts.push({label:'Tarikh',val:tarikhFmt});
-  if(masaFmt&&masaFmt!=='-')     parts.push({label:'Masa',val:masaFmt});
-
-  return parts.map(p=>`${p.label}: ${p.val}`).join(', ') || '-';
+ if(/^\d{4}-\d{2}-\d{2}$/.test(str)){
+  const [y,m,d]=str.split('-');
+  return `${d}/${m}/${y}`;
  }
- const items=[];
- const fields=['Item','ItemDiminta','Perkara','Barang','NamaBarang','JenisKenderaan','ModelProjektor'];
- for(const f of fields){const v=getField(d,f);if(v)items.push(v);}
- return items.length?items.join(', '):'-';
+
+ if(/^\d{1,2}:\d{2}(:\d{2})?$/.test(str)){
+  const parts=str.split(':');
+  return parts[0].padStart(2,'0')+':'+parts[1].padStart(2,'0');
+ }
+
+ return str;
 }
 
-// ── Load Data ─────────────────────────────────────────────────────────
+function getField(row,...keys){
+ for(const k of keys){
+  const v=row[k];
+  if(v!==undefined && v!==null && String(v).trim()!=='')
+   return String(v).trim();
+ }
+ return '-';
+}
+
+function getTimestamp(row){
+ return row['Timestamp']||row['timestamp']||row['TIMESTAMP']||'';
+}
+
+/* ══════════════════════════
+   EXTRACT ITEMS
+   ✅ Jenis Kenderaan keluar PERTAMA
+══════════════════════════ */
+function extractItems(row){
+ const items = [];
+ const usedKeys = new Set();
+
+ // ✅ LANGKAH 1: Keluarkan field jenis kenderaan dahulu (priority)
+ for(const key in row){
+  const keyLower = key.toLowerCase().trim();
+  if(PRIORITY_FIELDS.includes(keyLower)){
+   if(SKIP_FIELDS.includes(keyLower)) continue;
+   const val = row[key];
+   if(val === null || val === undefined) continue;
+   const str = String(val).trim();
+   if(str === '' || str === '-') continue;
+   const fmt = formatValue(val);
+   if(fmt === '-') continue;
+   items.push(`<b>${key}:</b> ${fmt}`);
+   usedKeys.add(key);
+  }
+ }
+
+ // ✅ LANGKAH 2: Keluarkan semua field lain (skip yang dah dipapar)
+ for(const key in row){
+  if(usedKeys.has(key)) continue;
+  if(SKIP_FIELDS.includes(key.toLowerCase().trim())) continue;
+  const val = row[key];
+  if(val === null || val === undefined) continue;
+  const str = String(val).trim();
+  if(str === '' || str === '-') continue;
+  const fmt = formatValue(val);
+  if(fmt === '-') continue;
+  items.push(`<b>${key}:</b> ${fmt}`);
+ }
+
+ return items.length ? items.join('<br>') : '-';
+}
+
+/* ══════════════════════════
+   DATA
+══════════════════════════ */
 let all=[],filtered=[];
+
 async function loadData(){
  all=[];
- document.getElementById('tableData').innerHTML='<tr><td colspan="6" class="loading">⏳ Memuatkan data...</td></tr>';
+ document.getElementById('tableData').innerHTML=
+  '<tr><td colspan="6" class="loading">⏳ Memuatkan data...</td></tr>';
+
  for(const s of SCRIPT_URLS){
   try{
-   const r=await fetch(s.url);
-   const d=await r.json();
-   const rows=Array.isArray(d)?d:Object.values(d).flat();
-   rows.forEach(x=>x.JenisPermohonan=s.label);
+   const r  =await fetch(s.url);
+   const raw=await r.json();
+   const rows=Array.isArray(raw)?raw:Object.values(raw).flat();
+   rows.forEach(x=>{ x._jenis=s.label; });
    all=all.concat(rows);
-  }catch(e){console.warn('Gagal load:',s.label,e);}
+  }catch(e){ console.warn('Gagal load:',s.label,e); }
  }
  filterData();
 }
@@ -353,39 +376,55 @@ function filterData(){
  const j=document.getElementById('fJenis').value;
  const b=document.getElementById('fBulan').value;
  const q=document.getElementById('search').value.toLowerCase();
- filtered=all.filter(d=>{
-  const bulan=d.Timestamp?String(new Date(d.Timestamp).getMonth()+1).padStart(2,'0'):'';
-  const txt=extractItems(d,true).toLowerCase();
-  return (j==='all'||d.JenisPermohonan===j)&&
-   (b==='all'||bulan===b)&&
-   ((d.Nama||'').toLowerCase().includes(q)||
-    (d.Jabatan||'').toLowerCase().includes(q)||txt.includes(q));
+
+ filtered=all.filter(row=>{
+  const ts   =getTimestamp(row);
+  const bulan=ts?String(new Date(ts).getMonth()+1).padStart(2,'0'):'';
+  const nama =getField(row,'Nama','nama').toLowerCase();
+  const jab  =getField(row,'Jabatan','jabatan').toLowerCase();
+  const items=extractItems(row).toLowerCase();
+
+  return (j==='all'||row._jenis===j)&&
+         (b==='all'||bulan===b)&&
+         (nama.includes(q)||jab.includes(q)||items.includes(q));
  });
- render(); updateDash();
+ render();
+ updateDash();
 }
+
+const jenisLabel={
+ 'AlatTulis2026':           'AlatTulis2026',
+ 'Kenderaan2026':           'PenggunaanKenderaan2026',
+ 'PermohonanKenderaan2026': 'PermohonanKenderaan2026',
+ 'Projektor2026':           'Projektor2026',
+};
 
 function render(){
  const tbody=document.getElementById('tableData');
- if(!filtered.length){tbody.innerHTML='<tr><td colspan="6" class="loading">Tiada Data</td></tr>';return;}
- tbody.innerHTML=filtered.map((d,i)=>`
+ if(!filtered.length){
+  tbody.innerHTML='<tr><td colspan="6" class="loading">Tiada Data</td></tr>';
+  return;
+ }
+ tbody.innerHTML=filtered.map((row,i)=>`
   <tr>
    <td>${i+1}</td>
-   <td>${d.JenisPermohonan==='PermohonanKenderaan2026'?'<span class="badge-pg">'+d.JenisPermohonan+'</span>':d.JenisPermohonan}</td>
-   <td>${d.Nama||'-'}</td>
-   <td>${d.Jabatan||'-'}</td>
-   <td class="item-list">${extractItems(d,false)}</td>
-   <td>${formatDateTime(d.Timestamp)}</td>
+   <td>${jenisLabel[row._jenis]||row._jenis}</td>
+   <td>${getField(row,'Nama','nama')}</td>
+   <td>${getField(row,'Jabatan','jabatan')}</td>
+   <td class="item-list">${extractItems(row)}</td>
+   <td>${formatDateTime(getTimestamp(row))}</td>
   </tr>`).join('');
 }
 
 function exportExcel(){
  if(!filtered.length) return alert('Tiada data untuk dieksport');
- const ws=XLSX.utils.json_to_sheet(filtered.map(d=>({
-  JenisPermohonan:d.JenisPermohonan,
-  Nama:d.Nama||'-',
-  Jabatan:d.Jabatan||'-',
-  ItemDiminta:extractItems(d,true),
-  Timestamp:formatDateTime(d.Timestamp)
+ const strip=s=>s.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+ const ws=XLSX.utils.json_to_sheet(filtered.map(row=>({
+  JenisPermohonan: jenisLabel[row._jenis]||row._jenis,
+  Nama:getField(row,'Nama','nama'),
+  Jabatan:getField(row,'Jabatan','jabatan'),
+  ItemDiminta:strip(extractItems(row)),
+  Timestamp:formatDateTime(getTimestamp(row))
  })));
  const wb=XLSX.utils.book_new();
  XLSX.utils.book_append_sheet(wb,ws,'Permohonan');
@@ -394,14 +433,14 @@ function exportExcel(){
 
 function updateDash(){
  document.getElementById('total').innerText =filtered.length;
- document.getElementById('alat').innerText  =filtered.filter(x=>x.JenisPermohonan==='AlatTulis2026').length;
- document.getElementById('ken').innerText   =filtered.filter(x=>x.JenisPermohonan==='Kenderaan2026').length;
- document.getElementById('pgken').innerText =filtered.filter(x=>x.JenisPermohonan==='PermohonanKenderaan2026').length;
- document.getElementById('pro').innerText   =filtered.filter(x=>x.JenisPermohonan==='Projektor2026').length;
+ document.getElementById('alat').innerText  =filtered.filter(x=>x._jenis==='AlatTulis2026').length;
+ document.getElementById('ken').innerText   =filtered.filter(x=>x._jenis==='Kenderaan2026').length;
+ document.getElementById('pgken').innerText =filtered.filter(x=>x._jenis==='PermohonanKenderaan2026').length;
+ document.getElementById('pro').innerText   =filtered.filter(x=>x._jenis==='Projektor2026').length;
 }
 
 document.addEventListener('DOMContentLoaded',generateQR);
 </script>
-
+ 
 </body>
 </html>
